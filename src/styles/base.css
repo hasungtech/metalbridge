@@ -12,6 +12,8 @@ a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
 input,textarea,select{font-family:inherit}
 :focus-visible{outline:2px solid var(--molten);outline-offset:3px}
+/* .btn{display:inline-flex} 같은 규칙이 기본 [hidden] 을 이깁니다. 전역으로 못박습니다. */
+[hidden]{display:none !important}
 
 .wrap{max-width:var(--max);margin:0 auto;padding:0 var(--section)}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
@@ -119,7 +121,6 @@ input,textarea,select{font-family:inherit}
 
 .donebox{margin:0 32px 20px;border:1px solid var(--charcoal);padding:20px 24px;flex:none;
   display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-.donebox[hidden]{display:none}
 .donebox-no{display:flex;flex-direction:column;gap:5px}
 .donebox-no .l{font-size:11px;color:var(--mute);letter-spacing:.08em}
 .donebox-no .v{font-size:20px}
@@ -162,7 +163,6 @@ input,textarea,select{font-family:inherit}
 .rail-b{flex:1;overflow-y:auto;min-height:0}
 .rail-f{flex:none;border-top:1px solid var(--hairline);padding:14px 28px;
   display:flex;align-items:center;gap:var(--md)}
-.rail-f[hidden]{display:none}
 .rail-f-txt{display:flex;align-items:center;gap:var(--sm);font-size:13px;color:var(--mute)}
 .rail-f-txt i{width:8px;height:8px;border-radius:50%;background:var(--success);flex:none}
 .rail-f .btn{margin-left:auto;flex:none}

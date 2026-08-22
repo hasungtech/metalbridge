@@ -130,6 +130,17 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 
 슬래시 명령: `/review` `/ship` `/design-sync` (`.claude/commands/`)
 
+## 화면 두 벌
+
+| 진입점 | 파일 | 대상 |
+|---|---|---|
+| `/` | `index.html` → `src/main.js` | 방문자 |
+| `/admin` | `admin.html` → `src/admin/main.js` | 담당자 (Supabase Auth) |
+
+Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
+**백오피스는 xlsx·pdf 청크를 받지 않습니다** — 무거운 파서를 담당자 화면에 끌어오지 마십시오.
+`/admin` 은 로그인 전에는 아무것도 렌더하지 않고, 데이터 차단은 전적으로 RLS 가 합니다.
+
 ## 화면 구성 (v4)
 
 메인은 화면 3개입니다. 설명형 섹션은 없습니다.
@@ -147,7 +158,8 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 
 ## 지금 남은 일
 
-- [ ] 백오피스 화면 `/admin` (Supabase Auth 로그인 · 요청 목록 · 상태 변경) — **최우선**
+- [x] 백오피스 화면 `/admin` — 매직링크 로그인 · 요청 목록 · 상태 변경 · 첨부 · 공급처 회신 입력
+- [ ] 공급처 마스터를 `suppliers` 테이블로 이관 후 백오피스에서 관리
 - [ ] 공급처 마스터를 `suppliers` 테이블로 이관 후 실제 거래처 입력
 - [ ] 공급처 회신 입력 화면 (지금은 엑셀 수신)
 - [ ] 접수 알림 (Edge Function → 메일 또는 슬랙)

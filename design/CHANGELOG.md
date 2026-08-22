@@ -2,6 +2,25 @@
 
 형식: `날짜 · 무엇을 · 왜 · 영향 범위`
 
+## 2026-08-22 · 백오피스 `/admin` 신설 (TASKS 1번)
+문의는 DB 에 쌓이는데 볼 화면이 없었습니다. Vite 다중 진입점으로 별도 페이지를 만듭니다.
+
+- `admin.html` + `src/admin/{main,detail}.js` + `src/admin/admin.css`
+- **매직링크 로그인** (`signInWithOtp`) — 비밀번호를 저장하지 않습니다
+- 요청 목록 — `rfq_board` 뷰 · 상태 필터 7종 + 전체 · 접수번호/연락처/고객사 검색 · 최신순 300건
+- 상세 — 접수 정보 · 첨부 다운로드(서명 URL 60초) · 품목 명세 · 확인 문답 · 발송 후보 공급처
+- 상태 변경 — 접수 → 확인중 → 발송준비 → 발송 → 회신취합 → 고객회신 → 종료
+- 공급처 회신 입력 — `unit_price` · `lead_time` 저장 시 `replied_at` 자동 기록
+- 번들 분리 — 백오피스는 admin(8KB) + supabase(220KB) 만 받습니다.
+  xlsx(424KB) · pdf(391KB) · main(1,165KB) 은 받지 않습니다
+- `noindex, nofollow` 지정
+- 부수 수정: `[hidden]{display:none !important}` — `.btn{display:inline-flex}` 가
+  기본 `[hidden]` 을 이겨 로그인 화면에 로그아웃 버튼이 보이던 문제
+- 영향: admin.html · src/admin/* · vite.config.js · base.css · CLAUDE.md
+- 확인: 로그인 전 목록 미표시·행 0건 · 로그인 후 목록/필터/상세 렌더링
+  (첨부 1 · 품목 2 · 문답 1 · 공급처 2, 태그 `확정`/`확인 필요`) · 공개 페이지 영향 없음 ·
+  npm test 3건 통과
+
 ## 2026-08-22 · 보안 강화 — 공급처 목록 유출 차단 · 익명 접수 조건화
 ### 공급처 목록이 고객에게 나가고 있었습니다
 `요청서 내려받기` 는 **고객이 누르는 버튼**인데, 그 엑셀 시트 ② 에 매칭된 공급처가
