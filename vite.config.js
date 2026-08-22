@@ -9,7 +9,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main:  resolve(__dirname, 'index.html'),
-        admin: resolve(__dirname, 'admin.html'),
+        admin:   resolve(__dirname, 'admin.html'),
+        privacy: resolve(__dirname, 'privacy.html'),
+        terms:   resolve(__dirname, 'terms.html'),
       },
       // 파서 라이브러리는 별도 청크로 — 첫 로딩을 가볍게, 백오피스는 아예 안 받게
       output: {

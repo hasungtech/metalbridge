@@ -50,6 +50,8 @@ export async function submitRfq() {
         extra: S.ANS.extra || S.ANS.memo || null,
         item_count: S.ITEMS.length,
         sendable: c.ok,
+        agreed_at: new Date().toISOString(),
+        marketing_opt_in: !!document.getElementById('agreeOpt')?.checked,
       });
     if (e1) throw e1;
 

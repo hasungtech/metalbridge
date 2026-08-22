@@ -52,7 +52,11 @@ dropEl.addEventListener('keydown',function(e){
   if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); }
 });
 document.getElementById('askAttach').addEventListener('click',function(){ fileInput.click(); });
-fileInput.addEventListener('change',function(){ if(this.files&&this.files.length) takeFiles(this.files); });
+fileInput.addEventListener('change',function(){
+  if(!this.files||!this.files.length) return;
+  if(!consentOk()){ this.value=''; return; }
+  takeFiles(this.files);
+});
 
 function fmtSize(b){
   if(b<1024) return b+' B';
@@ -177,8 +181,27 @@ function submit(text){
   }
   askIn.value='';
 }
-document.getElementById('askSend').addEventListener('click',function(){ submit(askIn.value); });
-askIn.addEventListener('keydown',function(e){ if(e.key==='Enter') submit(this.value); });
+/** 필수 동의를 받지 않으면 보내지 않습니다 (DB 에도 동의 시각 없이는 들어가지 않습니다) */
+function consentOk(){
+  var req=document.getElementById('agreeReq'), box=document.getElementById('consent');
+  if(!req || req.checked){ if(box) box.classList.remove('warn'); return true; }
+  if(box){ box.classList.add('warn'); box.scrollIntoView({block:'nearest'}); }
+  req.focus();
+  return false;
+}
+document.getElementById('askSend').addEventListener('click',function(){
+  if(!consentOk()) return;
+  submit(askIn.value);
+});
+askIn.addEventListener('keydown',function(e){
+  if(e.key!=='Enter') return;
+  if(!consentOk()) return;
+  submit(this.value);
+});
+var agreeReq=document.getElementById('agreeReq');
+if(agreeReq) agreeReq.addEventListener('change',function(){
+  if(this.checked) document.getElementById('consent').classList.remove('warn');
+});
 
 
 function askExtra(){

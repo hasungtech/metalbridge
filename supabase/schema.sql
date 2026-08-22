@@ -18,7 +18,9 @@ create table if not exists public.rfq (
   item_count    int  not null default 0,
   sendable      int  not null default 0,           -- 발송 가능 건수
   source        text not null default 'web',
-  memo          text                               -- 담당자 메모
+  memo          text,                              -- 담당자 메모
+  agreed_at     timestamptz,                       -- 개인정보 수집·이용 필수 동의 시각
+  marketing_opt_in boolean not null default false  -- 마케팅 수신 선택 동의
 );
 
 -- ── 2. 품목 명세
@@ -117,7 +119,10 @@ revoke all on function public.rfq_exists(uuid) from public;
 grant execute on function public.rfq_exists(uuid) to anon, authenticated;
 
 create policy "anon insert rfq" on public.rfq for insert to anon with check (
-  status = '접수' and rfq_no ~ '^MB-[0-9]{6}-[0-9]{3}$' and source = 'web' and memo is null);
+  status = '접수' and rfq_no ~ '^MB-[0-9]{6}-[0-9]{3}$' and source = 'web' and memo is null
+  and agreed_at is not null                        -- 필수 동의 없이는 접수 불가
+  and agreed_at <= now() + interval '5 minutes'
+  and agreed_at >= now() - interval '1 day');
 create policy "anon insert rfq_items"     on public.rfq_items     for insert to anon with check (public.rfq_exists(rfq_id));
 create policy "anon insert rfq_answers"   on public.rfq_answers   for insert to anon with check (public.rfq_exists(rfq_id));
 create policy "anon insert rfq_suppliers" on public.rfq_suppliers for insert to anon with check (public.rfq_exists(rfq_id));
@@ -155,6 +160,7 @@ create or replace view public.rfq_board as
 select
   r.id, r.rfq_no, r.created_at, r.status, r.contact, r.company,
   r.due, r.place, r.item_count, r.sendable,
+  r.agreed_at, r.marketing_opt_in,
   (select count(*) from public.rfq_suppliers s where s.rfq_id = r.id) as supplier_count,
   (select count(*) from public.rfq_suppliers s where s.rfq_id = r.id and s.replied_at is not null) as replied_count
 from public.rfq r
