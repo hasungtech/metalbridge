@@ -88,6 +88,16 @@ export const SUPPLIER_MASTER=[
 
 export function catOf(g){
   var t=(g||'').toUpperCase();
+  /* 대화로 받은 소재는 강종이 아니라 분류 이름입니다 ("알루미늄이 필요합니다").
+     강종 표기보다 먼저 봐야 '알루미늄' 이 구조용강으로 떨어지지 않습니다. */
+  if(/스테인리스|스텐/.test(t)) return '스테인리스';
+  if(/알루미늄|두랄루민/.test(t)) return '알루미늄';
+  if(/티타늄|니켈|인코넬|하스텔로이|모넬/.test(t)) return '티타늄·니켈';
+  if(/구리|동합금|황동|청동/.test(t)) return '구리·동합금';
+  if(/공구강|금형강/.test(t)) return '공구강';
+  if(/고장력/.test(t)) return '고장력강';
+  if(/특수강|기계구조/.test(t)) return '특수강';
+  if(/구조용/.test(t)) return '구조용강';
   if(/STS|SUS|2205|2507|310S|309S/.test(t)) return '스테인리스';
   if(/TI\s?GR|인코넬|하스텔로이|모넬|INCONEL/.test(t)) return '티타늄·니켈';
   if(/C\d{3,4}|황동|인청동/.test(t)) return '구리·동합금';

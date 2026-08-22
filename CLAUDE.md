@@ -114,7 +114,9 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 - **저장소** GitHub · **호스팅** Vercel · **데이터** Supabase (Netlify 미사용)
 - `main` 에 push하면 Vercel이 자동 빌드합니다. PR을 올리면 미리보기 URL이 생성됩니다
 - 문의 접수는 `src/engine/submit.js` → Supabase `rfq` 외 5개 테이블 + Storage `rfq-files`
-- 환경변수(`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)가 없으면 메일 앱으로 폴백합니다
+- **메일 앱을 열지 마십시오.** 담당자 전달은 백오피스에서 합니다. 저장에 실패하면
+  실패를 그대로 알리고 다시 누를 수 있게 둡니다 — `mailto:` 로 넘기면 접수됐는지가 흐려집니다
+- 환경변수(`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)가 없으면 접수가 실패합니다
 - 스키마는 `supabase/schema.sql` 이 단일 출처입니다. 테이블을 바꾸면 이 파일도 함께 고치십시오
 
 ### DB 작업 규칙
@@ -189,6 +191,9 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
   같은 출처에서 지연 로드합니다 — 외부 네트워크에 의존하지 마십시오
 - 권역 카드의 후보 공급처 수는 `SUPPLIER_MASTER` 에서 세어 씁니다 (`supplierCount()`).
   숫자를 화면에 적어두면 마스터를 갈아끼울 때 어긋납니다
+- **자료에서 품목을 못 찾으면 대화로 채웁니다.** 소재·형상·치수·수량 네 가지를 물어
+  품목 한 줄을 만듭니다 (`questions.js` 의 `needQuestions()`). 이걸 빼면 요청서에
+  넣을 줄이 없어 빈 표가 나갑니다
 - 판독 결과는 표가 아니라 **품목 카드**입니다. 결손 사유 문구는 `engine/parse.js`의
   `diagnose()` 출력을 그대로 쓰고 새 문구를 만들지 마십시오
 - 엔진의 상태값 `불가`는 화면에서 `확인 필요`로 표시합니다 (`ui/spec-table.js`의 `badge()`)

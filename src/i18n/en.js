@@ -93,6 +93,16 @@ export default {
   },
 
   q: {
+    needMatL: 'Material', needMatQ: 'Which material do you need?',
+    needMatPh: 'e.g. aluminium A6061-T6',
+    needMatO: ['Stainless', 'Aluminium', 'Tool & alloy steel', 'Inconel / titanium', 'Structural steel'],
+    needShapeL: 'Form', needShapeQ: 'In what form do you need it?',
+    needShapePh: 'e.g. plate / round bar / pipe',
+    needShapeO: ['Plate', 'Round bar', 'Square / steel tube', 'Pipe', 'Angle', 'Other'],
+    needDimL: 'Size', needDimQ: 'What size? Give us whatever you know.',
+    needDimPh: 'e.g. 100 × 100 × 5 · Ø50 × 1000 · t10',
+    needQtyL: 'Quantity', needQtyQ: 'How much do you need?',
+    needQtyPh: 'e.g. 20 sheets · 5 lengths · 2 tonnes',
     contactL: 'Contact', contactQ: 'Where should we send the reply?', contactPh: 'Email or mobile',
     dimdefL: 'Dimension order',
     dimdefQ: '{n} item(s) list numbers only. Is the first number the length or the thickness?',
@@ -124,6 +134,10 @@ export default {
   },
 
   chat: {
+    sendFailConfig: '<b>We could not receive that.</b><span class="mini">Our intake is not connected yet. Download the RFQ and email it to quote@metalbridge.ai and our team will pick it up straight away.</span>',
+    sendFailDb: '<b>We could not receive that.</b><span class="mini">Please press the button again in a moment. If it keeps failing, download the RFQ and email it to quote@metalbridge.ai.</span>',
+    stateFail: 'Not received · please try again',
+    needIntro: '<b>Let us ask what you need.</b><span class="mini">Four things — material, form, size and quantity — and we can build the RFQ.</span>',
     reading: 'Reading your files…',
     readFail: 'could not be read',
     openFail: 'We could not open that file.<span class="mini">{err}</span>Our team will open it manually. You can also type what you need in one line.',

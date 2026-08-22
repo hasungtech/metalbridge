@@ -6,6 +6,7 @@
  *  v 를 번역하면 아래 비교문이 전부 어긋나고 담당자가 받는 요청서도 언어별로 갈라집니다.
  */
 import { S } from '../state.js';
+import { diagnose } from '../engine/parse.js';
 import { renderSpec } from './spec-table.js';
 import { t } from '../i18n/index.js';
 
@@ -17,10 +18,25 @@ function opts(values, key) {
   });
 }
 
+/** 자료에서 품목을 하나도 못 찾았을 때 — 무엇이 얼마나 필요한지 대화로 채웁니다.
+ *  "알루미늄이 필요합니다" 처럼 소재만 말씀하신 경우가 여기에 해당합니다.
+ *  이걸 묻지 않으면 요청서에 넣을 줄이 없어 빈 표가 나갑니다. */
+function needQuestions(){
+  return [
+    { k:'needMat',   label:t('q.needMatL'),   q:t('q.needMatQ'),   ph:t('q.needMatPh'),
+      opts:opts(['스테인리스','알루미늄','특수강·공구강','인코넬·티타늄','구조용강'],'q.needMatO') },
+    { k:'needShape', label:t('q.needShapeL'), q:t('q.needShapeQ'), ph:t('q.needShapePh'),
+      opts:opts(['판재','환봉','각관·강관','파이프','앵글','기타'],'q.needShapeO') },
+    { k:'needDim',   label:t('q.needDimL'),   q:t('q.needDimQ'),   ph:t('q.needDimPh'), opts:[] },
+    { k:'needQty',   label:t('q.needQtyL'),   q:t('q.needQtyQ'),   ph:t('q.needQtyPh'), opts:[] },
+  ];
+}
+
 export function buildQuestions(){
   var qs=[];
   if(!S.ANS.contact)
     qs.push({k:'contact',label:t('q.contactL'),q:t('q.contactQ'),ph:t('q.contactPh'),opts:[]});
+  if(!S.ITEMS.length) qs = qs.concat(needQuestions());
   if(S.GAPS.ambig.length)
     qs.push({k:'dimdef',label:t('q.dimdefL'),
       q:t('q.dimdefQ',{n:S.GAPS.ambig.length}),ph:'',
@@ -59,8 +75,36 @@ export function buildQuestions(){
   return qs;
 }
 
+/** 대화로 만든 품목 한 줄. 자료에서 읽은 품목이 없을 때만 씁니다. */
+function chatItem(){
+  var it = S.ITEMS.find(function(x){ return x.fromChat; });
+  if(!it){
+    it = { fromChat:true, raw:'', grades:[], shape:'(미분류)', dim:'(미기재)',
+           dims:[], qty:'', needLen:false, hasLen:true, ambiguous:false,
+           no:S.ITEMS.length+1, issues:[], state:'조건부' };
+    S.ITEMS.push(it);
+  }
+  return it;
+}
+
+var NEED_KEYS = { needMat:1, needShape:1, needDim:1, needQty:1 };
+
+function applyNeed(k,v){
+  var it = chatItem();
+  if(k==='needMat')   it.grades = [v];
+  if(k==='needShape') it.shape  = (v==='기타') ? '(미분류)' : v;
+  if(k==='needDim')   it.dim    = v;
+  if(k==='needQty')   it.qty    = v;
+  it.raw = [ it.grades[0], it.shape!=='(미분류)'?it.shape:'',
+             it.dim!=='(미기재)'?it.dim:'', it.qty ].filter(Boolean).join(' · ');
+  it.note = '고객 확인';
+  S.GAPS = diagnose(S.ITEMS);
+  renderSpec();
+}
+
 export function applyAnswer(k,v,rows){
   S.ANS[k]=v;
+  if(NEED_KEYS[k]) return applyNeed(k,v);
   if(!rows) return;
   rows.forEach(function(n){
     var it=S.ITEMS[n-1]; if(!it) return;

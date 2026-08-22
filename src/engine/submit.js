@@ -1,11 +1,14 @@
 /**
  * 견적 문의 접수 — Supabase 저장
- * 환경변수가 없으면 메일 앱으로 대체합니다.
+ *
+ * **메일 앱을 열지 않습니다.** 담당자에게 보내는 일은 백오피스에서 합니다.
+ * 저장하지 못하면 실패를 그대로 알리고 다시 누를 수 있게 둡니다 —
+ * 메일 앱으로 넘기면 접수됐는지 아닌지가 흐려집니다.
  */
 import { supabase, hasSupabase } from '../lib/supabase.js';
-import { S, MB_MAIL } from '../state.js';
+import { S } from '../state.js';
 import { matchSuppliers, catOf } from './suppliers.js';
-import { rfqNo, summaryCounts, buildMailBody } from './export-rfq.js';
+import { rfqNo, summaryCounts } from './export-rfq.js';
 
 /** 스토리지 경로에 쓸 수 있게 파일명을 정리합니다 (경로 이탈·특수문자 방지) */
 function safeName(name) {
@@ -31,7 +34,7 @@ export async function submitRfq() {
   const no = rfqNo();
   const c = summaryCounts();
 
-  if (!hasSupabase) return { mode: 'mail', no, run: mailFallback };
+  if (!hasSupabase) return { mode: 'error', no, reason: 'config' };
 
   try {
     // 1. 헤더 — id 를 직접 정해 되돌려받지 않습니다 (익명 조회 권한 불필요)
@@ -110,16 +113,7 @@ export async function submitRfq() {
     S.SENT = true;
     return { mode: 'db', no, id: rfqId };
   } catch (err) {
-    console.warn('Supabase 저장 실패 — 메일로 대체합니다:', err.message);
-    return { mode: 'mail', no, run: mailFallback, error: err.message };
+    console.warn('접수 저장 실패:', err.message);
+    return { mode: 'error', no, reason: 'db', error: err.message };
   }
-}
-
-export function mailFallback() {
-  const no = rfqNo();
-  window.location.href =
-    'mailto:' + MB_MAIL +
-    '?subject=' + encodeURIComponent('[견적문의] ' + no + ' · 품목 ' + S.ITEMS.length + '건') +
-    '&body=' + encodeURIComponent(buildMailBody());
-  S.SENT = true;
 }

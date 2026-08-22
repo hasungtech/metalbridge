@@ -117,9 +117,10 @@ function startRead(files, waitBub){
 }
 
 function startQA(){
+  var noItems = !S.ITEMS.length;
   S.qQueue=buildQuestions(); S.qPos=0; S.MODE='qa'; S.finished=false;
   if(!S.qQueue.length) return finishAsk();
-  sys(t('chat.qaIntro',{n:S.qQueue.length}));
+  sys(noItems ? t('chat.needIntro') : t('chat.qaIntro',{n:S.qQueue.length}));
   askQ();
 }
 function itemLine(n){
@@ -260,9 +261,9 @@ function openDoneBox(no){
           mark(t('chat.stateSent',{no:res.no}),true);
           sys(t('chat.okDb',{no:res.no}));
         } else {
-          if(res.run) res.run();
-          mark(t('chat.stateMail',{no:res.no}),false);
-          sys(t('chat.okMail',{no:res.no}));
+          /* 메일 앱을 열지 않습니다. 실패는 실패로 두고 다시 누를 수 있게 합니다. */
+          mark(t('chat.stateFail'),false);
+          sys(t(res.reason==='config' ? 'chat.sendFailConfig' : 'chat.sendFailDb'));
         }
         syncHero();
       });

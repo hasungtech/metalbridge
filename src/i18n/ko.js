@@ -92,6 +92,16 @@ export default {
   },
 
   q: {
+    needMatL: '필요한 소재', needMatQ: '어떤 소재가 필요하십니까?',
+    needMatPh: '예) 알루미늄 A6061-T6',
+    needMatO: ['스테인리스', '알루미늄', '특수강·공구강', '인코넬·티타늄', '구조용강'],
+    needShapeL: '형상', needShapeQ: '어떤 형태로 받으시겠습니까?',
+    needShapePh: '예) 판재 / 환봉 / 파이프',
+    needShapeO: ['판재', '환봉', '각관·강관', '파이프', '앵글', '기타'],
+    needDimL: '치수', needDimQ: '치수를 알려주십시오. 아는 만큼만 적어주셔도 됩니다.',
+    needDimPh: '예) 100 × 100 × 5 · Ø50 × 1000 · t10',
+    needQtyL: '수량', needQtyQ: '얼마나 필요하십니까?',
+    needQtyPh: '예) 20장 · 5본 · 2톤',
     contactL: '연락처', contactQ: '회신받으실 연락처를 알려주십시오.', contactPh: '이메일 또는 휴대폰',
     dimdefL: '치수 열 정의',
     dimdefQ: '숫자만 나열된 품목이 {n}건 있습니다. 앞의 숫자가 길이입니까, 두께입니까?',
@@ -123,6 +133,10 @@ export default {
   },
 
   chat: {
+    sendFailConfig: '<b>접수하지 못했습니다.</b><span class="mini">접수 창구가 아직 연결되지 않았습니다. 요청서를 내려받아 quote@metalbridge.ai 로 보내주시면 담당자가 바로 확인하겠습니다.</span>',
+    sendFailDb: '<b>접수하지 못했습니다.</b><span class="mini">잠시 후 다시 눌러주십시오. 계속 안 되면 요청서를 내려받아 quote@metalbridge.ai 로 보내주십시오.</span>',
+    stateFail: '접수되지 않았습니다 · 다시 시도해 주십시오',
+    needIntro: '<b>어떤 소재가 필요하신지 여쭙겠습니다.</b><span class="mini">소재 · 형상 · 치수 · 수량 네 가지만 알려주시면 요청서를 만들 수 있습니다.</span>',
     reading: '자료를 읽고 있습니다…',
     readFail: '읽기 실패',
     openFail: '자료를 여는 데 실패했습니다.<span class="mini">{err}</span>담당자가 직접 열어 확인하겠습니다. 필요하신 소재를 한 줄로 적어주셔도 됩니다.',

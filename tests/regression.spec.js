@@ -128,3 +128,66 @@ test('언어 선택이 새로고침 뒤에도 남는다', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
   await expect(page.locator('.rail-label')).toHaveText('読み取り結果');
 });
+
+/* ── 자료 없이 대화만으로 접수 ── */
+
+/** 칩이 있으면 누르고, 없으면 입력줄에 적어 보냅니다. */
+async function answer(page, text) {
+  const chip = page.locator(`#askChips button:has-text("${text}")`).first();
+  if (await chip.count()) await chip.click();
+  else { await page.fill('#askIn', text); await page.press('#askIn', 'Enter'); }
+  await page.waitForTimeout(400);
+}
+
+test('품목을 못 찾으면 소재·형상·치수·수량을 묻는다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  // 소재 이름만 적으면 파서가 품목으로 읽지 못합니다. 그때 대화로 채워야 합니다.
+  await page.fill('#askIn', '알루미늄이 필요합니다');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(600);
+
+  await answer(page, 'buyer@example.com');
+  await expect(page.locator('.abub.sys').last()).toContainText('어떤 소재가 필요하십니까');
+  await answer(page, '알루미늄');
+  await expect(page.locator('.abub.sys').last()).toContainText('어떤 형태로');
+  await answer(page, '판재');
+  await expect(page.locator('.abub.sys').last()).toContainText('치수를 알려주십시오');
+  await answer(page, '1000 × 2000 × t10');
+  await expect(page.locator('.abub.sys').last()).toContainText('얼마나 필요하십니까');
+  await answer(page, '20장');
+
+  // 대화 답변이 품목 한 줄이 됩니다 — 요청서에 넣을 내용이 생깁니다
+  await expect(page.locator('#specBody .card')).toHaveCount(1);
+  const card = await page.textContent('#specBody .card');
+  expect(card).toContain('알루미늄');
+  expect(card).toContain('판재');
+  expect(card).toContain('20장');
+  await expect(page.locator('#specMeta')).toContainText('확정 1');
+});
+
+test('접수에 실패해도 메일 앱을 열지 않는다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  await page.fill('#askIn', 'STS316L 판재 1000x2000xt10 20장');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(600);
+  for (let i = 0; i < 10; i++) {
+    if (await page.locator('#doneBox').isVisible()) break;
+    const chips = page.locator('#askChips button');
+    if (await chips.count()) await chips.first().click();
+    else { await page.fill('#askIn', '부산'); await page.press('#askIn', 'Enter'); }
+    await page.waitForTimeout(400);
+  }
+  await expect(page.locator('#doneBox')).toBeVisible();
+
+  const before = page.url();
+  await page.click('#sendStaff');
+  await page.waitForTimeout(1500);
+  // 환경변수가 없는 테스트 환경에서는 접수가 실패합니다. 메일 앱으로 넘기지 않습니다.
+  expect(page.url()).toBe(before);
+  await expect(page.locator('#doneState')).toContainText('접수되지 않았습니다');
+  await expect(page.locator('.abub.sys').last()).toContainText('접수하지 못했습니다');
+  // 다시 누를 수 있어야 합니다
+  await expect(page.locator('#sendStaff')).toBeEnabled();
+});

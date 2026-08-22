@@ -92,6 +92,16 @@ export default {
   },
 
   q: {
+    needMatL: '必要な材料', needMatQ: 'どの材料が必要でしょうか。',
+    needMatPh: '例）アルミニウム A6061-T6',
+    needMatO: ['ステンレス', 'アルミニウム', '特殊鋼・工具鋼', 'インコネル・チタン', '構造用鋼'],
+    needShapeL: '形状', needShapeQ: 'どの形状でご希望ですか。',
+    needShapePh: '例）板材 / 丸棒 / パイプ',
+    needShapeO: ['板材', '丸棒', '角管・鋼管', 'パイプ', 'アングル', 'その他'],
+    needDimL: '寸法', needDimQ: '寸法をお教えください。わかる範囲で結構です。',
+    needDimPh: '例）100 × 100 × 5 · Ø50 × 1000 · t10',
+    needQtyL: '数量', needQtyQ: 'どれくらい必要でしょうか。',
+    needQtyPh: '例）20枚 · 5本 · 2トン',
     contactL: '連絡先', contactQ: 'ご回答をお送りする連絡先をお教えください。', contactPh: 'メールまたは携帯電話',
     dimdefL: '寸法の並び順',
     dimdefQ: '数値のみの品目が{n}件あります。最初の数値は長さですか、厚さですか。',
@@ -123,6 +133,10 @@ export default {
   },
 
   chat: {
+    sendFailConfig: '<b>受け付けられませんでした。</b><span class="mini">受付窓口がまだ接続されていません。依頼書をダウンロードのうえ quote@metalbridge.ai へお送りいただければ、担当者がすぐ確認します。</span>',
+    sendFailDb: '<b>受け付けられませんでした。</b><span class="mini">少し経ってからもう一度押してください。それでも失敗する場合は、依頼書をダウンロードして quote@metalbridge.ai へお送りください。</span>',
+    stateFail: '受け付けられていません · もう一度お試しください',
+    needIntro: '<b>何が必要かお伺いします。</b><span class="mini">材料・形状・寸法・数量の4つをお教えいただければ、依頼書を作成できます。</span>',
     reading: '資料を読み取っています…',
     readFail: '読み取り失敗',
     openFail: '資料を開けませんでした。<span class="mini">{err}</span>担当者が直接開いて確認します。必要な材料を一行で書いていただいても結構です。',

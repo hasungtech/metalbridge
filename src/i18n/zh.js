@@ -92,6 +92,16 @@ export default {
   },
 
   q: {
+    needMatL: '所需材料', needMatQ: '需要哪种材料？',
+    needMatPh: '例：铝 A6061-T6',
+    needMatO: ['不锈钢', '铝', '特殊钢／工具钢', '因科镍／钛', '结构钢'],
+    needShapeL: '形状', needShapeQ: '希望以什么形状供货？',
+    needShapePh: '例：板材 / 圆棒 / 管材',
+    needShapeO: ['板材', '圆棒', '方管／钢管', '管材', '角钢', '其他'],
+    needDimL: '尺寸', needDimQ: '请告知尺寸，知道多少写多少即可。',
+    needDimPh: '例：100 × 100 × 5 · Ø50 × 1000 · t10',
+    needQtyL: '数量', needQtyQ: '需要多少？',
+    needQtyPh: '例：20 张 · 5 根 · 2 吨',
     contactL: '联系方式', contactQ: '请留下接收回复的联系方式。', contactPh: '邮箱或手机',
     dimdefL: '尺寸顺序',
     dimdefQ: '有 {n} 项只写了数字。前面的数字是长度还是厚度？',
@@ -123,6 +133,10 @@ export default {
   },
 
   chat: {
+    sendFailConfig: '<b>未能受理。</b><span class="mini">受理通道尚未接通。请下载询价书并发送至 quote@metalbridge.ai，专员会立即确认。</span>',
+    sendFailDb: '<b>未能受理。</b><span class="mini">请稍后再点一次。若仍不成功，请下载询价书并发送至 quote@metalbridge.ai。</span>',
+    stateFail: '未受理 · 请重试',
+    needIntro: '<b>请让我们了解您的需求。</b><span class="mini">材料、形状、尺寸、数量四项齐了就能生成询价书。</span>',
     reading: '正在读取资料…',
     readFail: '读取失败',
     openFail: '这份资料打不开。<span class="mini">{err}</span>专员会手动打开确认。您也可以用一行字写下所需材料。',

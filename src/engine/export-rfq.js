@@ -112,7 +112,9 @@ function buildBook(mode){
          ['■ 판독 요약'],
          ['총 품목',c.total+'건','','발송 가능',c.ok+'건'],
          ['확인 후 가능',c.cond+'건','','추가 확인 필요',c.no+'건'],
-         ['발송 후보',MS.length+'곳','','현재 상태',c.no>0?'확인 중 (일부 발송 가능)':'발송 준비 완료'],
+         ['발송 후보',MS.length+'곳','','현재 상태',
+           !S.ITEMS.length ? '품목 미확정 — 담당자 확인 필요'
+             : (c.no>0?'확인 중 (일부 발송 가능)':'발송 준비 완료')],
          [],
          ['■ 소재별 공급처 확보 현황'],
          ['소재 구분','후보 공급처','국가 분포','국내 공급처']];
@@ -146,27 +148,3 @@ export function exportRfqSupplier(){ save('supplier'); }
 export function exportRfqInternal(){ save('internal'); }
 
 /* ── 담당자 전달 (메일) ── */
-export function buildMailBody(){
-  var no=rfqNo(), c=summaryCounts(), L=[];
-  L.push('[METAL BRIDGE 견적 문의] '+no);
-  L.push('');
-  L.push('연락처: '+pick('contact'));
-  L.push('희망 납기: '+pick('due')+' / 인도 장소: '+pick('place'));
-  L.push('성적서: '+pick('mtc'));
-  if(pick('extra')) L.push('추가 요청: '+pick('extra'));
-  L.push('');
-  L.push('판독 결과: 총 '+c.total+'건 (발송 가능 '+c.ok+' · 확인 후 '+c.cond+' · 확인 필요 '+c.no+')');
-  L.push('');
-  L.push('■ 품목');
-  S.ITEMS.slice(0,15).forEach(function(it){
-    L.push(it.no+'. '+(it.grades.join('/')||'(미기재)')+' | '+it.shape+' | '+it.dim+' | '+(it.qty||'-')+' | '+it.state);
-  });
-  if(S.ITEMS.length>15) L.push('... 외 '+(S.ITEMS.length-15)+'건 (첨부 파일 참조)');
-  L.push('');
-  L.push('■ 확인 내역');
-  S.QLOG.forEach(function(q){ L.push('- '+q.label+': '+q.a); });
-  L.push('');
-  L.push('※ 내려받은 요청서 엑셀 파일을 이 메일에 첨부해 주십시오.');
-  return L.join('\n');
-}
-
