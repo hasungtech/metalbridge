@@ -82,3 +82,49 @@ test('동의 없이는 접수되지 않는다', async ({ page }) => {
   await page.waitForTimeout(3000);
   await expect(page.locator('#specBody .card')).toHaveCount(0);
 });
+
+/* ── 다국어 ── */
+
+test('언어 전환 — 버튼 4개로 화면이 바뀐다', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#langSw button')).toHaveCount(4);
+  // 기본은 한국어 (playwright.config.js 에서 locale 을 ko-KR 로 고정)
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
+
+  const cases = [
+    ['en', 'What we read', /Specialty metal sourcing/],
+    ['ja', '読み取り結果', /特殊金属材料/],
+    ['zh', '识别结果', /特殊金属材料询价/],
+    ['ko', '판독 결과', /특수 소재 견적/],
+  ];
+  for (const [code, railLabel, title] of cases) {
+    await page.click(`#langSw button[data-l="${code}"]`);
+    await expect(page.locator('html')).toHaveAttribute('lang', code);
+    await expect(page.locator('.rail-label')).toHaveText(railLabel);
+    await expect(page).toHaveTitle(title);
+  }
+});
+
+test('언어를 바꿔도 판독 결과는 그대로다', async ({ page }) => {
+  await page.goto('/');
+  await attachSample(page);
+  await page.waitForSelector('#specBody .card', { timeout: 30000 });
+  const before = await page.locator('#specBody .card').count();
+
+  await page.click('#langSw button[data-l="en"]');
+  await page.waitForTimeout(300);
+  expect(await page.locator('#specBody .card').count()).toBe(before);
+  // 상태 배지와 카드 라벨이 번역됩니다 (엔진 값은 한국어 그대로입니다)
+  const tags = await page.$$eval('#specBody .tag', (els) => [...new Set(els.map((e) => e.textContent))]);
+  for (const tag of tags) expect(['Confirmed', 'Conditional', 'Needs checking']).toContain(tag);
+  await expect(page.locator('#specBody .cell .l').first()).toHaveText('Form');
+});
+
+test('언어 선택이 새로고침 뒤에도 남는다', async ({ page }) => {
+  await page.goto('/');
+  await page.click('#langSw button[data-l="ja"]');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
+  await expect(page.locator('.rail-label')).toHaveText('読み取り結果');
+});
