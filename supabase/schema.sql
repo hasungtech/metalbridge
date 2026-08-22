@@ -106,11 +106,22 @@ alter table public.rfq_files     enable row level security;
 alter table public.suppliers     enable row level security;
 
 -- 익명 접수 허용 (insert only)
-create policy "anon insert rfq"           on public.rfq           for insert to anon with check (true);
-create policy "anon insert rfq_items"     on public.rfq_items     for insert to anon with check (true);
-create policy "anon insert rfq_answers"   on public.rfq_answers   for insert to anon with check (true);
-create policy "anon insert rfq_suppliers" on public.rfq_suppliers for insert to anon with check (true);
-create policy "anon insert rfq_files"     on public.rfq_files     for insert to anon with check (true);
+-- 익명 키는 브라우저에 노출됩니다. RLS 가 유일한 방어선이므로 조건을 답니다.
+-- 상세 조건과 길이 제약은 2026-08-22_harden_anon_insert.sql 참조.
+create or replace function public.rfq_exists(p uuid)
+returns boolean language sql security definer stable
+set search_path = public as $$
+  select exists (select 1 from public.rfq where id = p);
+$$;
+revoke all on function public.rfq_exists(uuid) from public;
+grant execute on function public.rfq_exists(uuid) to anon, authenticated;
+
+create policy "anon insert rfq" on public.rfq for insert to anon with check (
+  status = '접수' and rfq_no ~ '^MB-[0-9]{6}-[0-9]{3}$' and source = 'web' and memo is null);
+create policy "anon insert rfq_items"     on public.rfq_items     for insert to anon with check (public.rfq_exists(rfq_id));
+create policy "anon insert rfq_answers"   on public.rfq_answers   for insert to anon with check (public.rfq_exists(rfq_id));
+create policy "anon insert rfq_suppliers" on public.rfq_suppliers for insert to anon with check (public.rfq_exists(rfq_id));
+create policy "anon insert rfq_files"     on public.rfq_files     for insert to anon with check (public.rfq_exists(rfq_id));
 
 -- 담당자(로그인) 전체 권한
 create policy "staff all rfq"           on public.rfq           for all to authenticated using (true) with check (true);
@@ -125,13 +136,13 @@ create policy "staff all suppliers"     on public.suppliers     for all to authe
 --  Storage — 고객 자료 업로드용 버킷
 --  Dashboard → Storage → New bucket → 이름 rfq-files · Public 해제
 -- ═══════════════════════════════════════════════════════════
-insert into storage.buckets (id, name, public)
-values ('rfq-files', 'rfq-files', false)
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('rfq-files', 'rfq-files', false, 52428800)   -- 50MB
 on conflict (id) do nothing;
 
 create policy "anon upload rfq files"
   on storage.objects for insert to anon
-  with check (bucket_id = 'rfq-files');
+  with check (bucket_id = 'rfq-files' and name ~ '^MB-[0-9]{6}-[0-9]{3}/');
 
 create policy "staff read rfq files"
   on storage.objects for select to authenticated

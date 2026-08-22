@@ -2,6 +2,33 @@
 
 형식: `날짜 · 무엇을 · 왜 · 영향 범위`
 
+## 2026-08-22 · 보안 강화 — 공급처 목록 유출 차단 · 익명 접수 조건화
+### 공급처 목록이 고객에게 나가고 있었습니다
+`요청서 내려받기` 는 **고객이 누르는 버튼**인데, 그 엑셀 시트 ② 에 매칭된 공급처가
+이름·적합도·MOQ·리드타임·비고까지 통째로 들어 있었습니다.
+CLAUDE.md 의 "공급처 목록이 공개되면 안 됩니다" 규칙 위반입니다.
+
+- `export-rfq.js` 를 수신자별 셋으로 분리
+  `exportRfq()` 고객 — ①③④ / `exportRfqSupplier()` 공급처 — ① / `exportRfqInternal()` 담당자 — 전부
+- 웹 버튼은 고객용을 부릅니다. 확인 결과 고객 파일 시트가 3개로 줄고 ② 가 빠졌습니다
+- 시트 ② 의 "48시간 내 회신" 문구 제거 — 검증되지 않은 수치 (문구 규칙)
+
+### 익명 insert 가 무조건이었습니다
+익명 키는 번들에 노출되므로 RLS 가 유일한 방어선인데 `with check (true)` 였습니다.
+
+- `supabase/2026-08-22_harden_anon_insert.sql` 신설
+  - 5개 테이블에 길이·개수 상한 CHECK 제약
+  - `rfq` 익명 insert 조건: `status='접수'` · 접수번호 형식 · `source='web'` · `memo is null`
+  - 나머지 4개 테이블은 `rfq_exists()` (security definer) 로 실존 `rfq_id` 강제
+  - Storage 버킷 `file_size_limit` 50MB + `allowed_mime_types` 지정
+  - 업로드 경로를 `MB-YYMMDD-NNN/` 으로 제한
+- `submit.js` — `status` 를 `'접수'` 로 고정 (기존엔 클라이언트가 `확인중`/`발송준비` 를 직접 지정).
+  진행 상태는 담당자 몫입니다. 파일명 `safeName()` 정규화 추가
+- `schema.sql` 동기화 (단일 출처)
+- CLAUDE.md 에 DB·엑셀 규칙 추가
+- 영향: engine/export-rfq.js · engine/submit.js · supabase/*.sql · CLAUDE.md
+- 확인: 고객 파일 시트 `① ③ ④` — 공급처 목록 없음 · npm test 3건 통과
+
 ## 2026-08-22 · 브랜드 소개 화면을 첫 화면으로 (v4 TF 1번 되돌림)
 운영자 요청으로 문의창 앞에 브랜드 소개 화면을 둡니다.
 v4 TF 검토 1번("설명 섹션 전부 삭제, 첫 화면을 문의창 자체로")과 반대 방향이라,

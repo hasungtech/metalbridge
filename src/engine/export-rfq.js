@@ -1,4 +1,12 @@
-/** 견적요청서 엑셀 생성 (4시트) · 담당자 전달 */
+/** 견적요청서 엑셀 생성 · 담당자 전달
+ *
+ *  받는 사람에 따라 시트를 나눕니다. 공급처 목록(시트 ②)은 담당자 전용입니다 —
+ *  고객이 내려받는 파일에 넣지 마십시오 (CLAUDE.md · DB 작업 규칙).
+ *
+ *    exportRfq()          고객용  — 요청서 사본 · 판독 명세 · 접수 내역
+ *    exportRfqSupplier()  공급처용 — 요청서 한 장만 (연락처·판독 근거 없음)
+ *    exportRfqInternal()  담당자용 — 전부 (공급처 목록 포함)
+ */
 import * as XLSX from 'xlsx';
 import { S, MB_MAIL } from '../state.js';
 import { matchSuppliers, coverage, catOf } from './suppliers.js';
@@ -12,7 +20,7 @@ export function summaryCounts(){
   var cond=S.ITEMS.filter(function(i){return i.state==='조건부';}).length;
   return {ok:ok,cond:cond,no:S.ITEMS.length-ok-cond,total:S.ITEMS.length};
 }
-export function exportRfq(){
+function buildBook(mode){
   var no=rfqNo(), c=summaryCounts(), MS=matchSuppliers(), CV=coverage();
   var wb=XLSX.utils.book_new();
   var today=new Date(), valid=new Date(today.getTime()+14*86400000);
@@ -54,8 +62,10 @@ export function exportRfq(){
   wsQ['!merges']=[{s:{r:0,c:0},e:{r:0,c:12}},{s:{r:1,c:0},e:{r:1,c:12}},
                   {s:{r:7,c:0},e:{r:7,c:12}},{s:{r:11,c:0},e:{r:11,c:12}}];
   XLSX.utils.book_append_sheet(wb,wsQ,'① 견적요청서(발송용)');
+  if(mode==='supplier') return { wb:wb, no:no };   // 공급처에는 이 한 장만
 
-  /* ══ 2. 발송처 목록 ══ */
+  /* ══ 2. 발송처 목록 — 담당자 전용. 고객 파일에 넣지 마십시오 ══ */
+  if(mode==='internal'){
   var E=[['견적 요청 발송처 목록'],['요청번호',no,'','후보 공급처',MS.length+'곳'],
          ['※ 판독된 소재·형상에 따라 자동 선정된 실존 제조사·유통사입니다. 현재 거래 이력은 없으며 접촉 대상 후보입니다.'],[],
          ['No','적합도','국가','지역','유형','공급처','취급 소재','취급 형상',
@@ -69,13 +79,14 @@ export function exportRfq(){
   E.push([]);
   var byC={}; MS.forEach(function(m){ byC[m.sp.c]=(byC[m.sp.c]||0)+1; });
   E.push(['국가별 분포',Object.keys(byC).map(function(k){return k+' '+byC[k]+'곳';}).join(' · ')]);
-  E.push(['발송 원칙','적합도 상위 8곳을 1차 발송 · 48시간 내 회신 부족 시 2차 발송']);
+  E.push(['발송 원칙','적합도 상위 8곳을 1차 발송 · 회신 상황을 보아 2차 발송']);
   var wsE=XLSX.utils.aoa_to_sheet(E);
   wsE['!cols']=[{wch:5},{wch:8},{wch:9},{wch:12},{wch:10},{wch:28},{wch:18},{wch:26},
                 {wch:9},{wch:10},{wch:22},{wch:12},{wch:7},{wch:11},{wch:11},{wch:13},{wch:10},{wch:24}];
   wsE['!merges']=[{s:{r:0,c:0},e:{r:0,c:17}},{s:{r:2,c:0},e:{r:2,c:17}}];
   wsE['!autofilter']={ref:'A5:R'+(5+MS.length)};
   XLSX.utils.book_append_sheet(wb,wsE,'② 발송처목록');
+  }
 
   /* ══ 3. 판독 명세 (내부) ══ */
   var B=[['판독 명세 (내부용)'],['요청번호',no],[],
@@ -118,8 +129,21 @@ export function exportRfq(){
   ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}}];
   XLSX.utils.book_append_sheet(wb,ws1,'④ 접수·확인내역');
 
-  XLSX.writeFile(wb,'METALBRIDGE_'+no+'.xlsx');
+  return { wb:wb, no:no };
 }
+
+const SUFFIX = { customer:'', supplier:'_발송용', internal:'_내부용' };
+function save(mode){
+  var r=buildBook(mode);
+  XLSX.writeFile(r.wb, 'METALBRIDGE_'+r.no+SUFFIX[mode]+'.xlsx');
+}
+
+/** 고객용 — 공급처 목록은 들어가지 않습니다 */
+export function exportRfq(){ save('customer'); }
+/** 공급처 발송용 — 요청서 한 장. 연락처·판독 근거 없음 */
+export function exportRfqSupplier(){ save('supplier'); }
+/** 담당자용 — 공급처 목록 포함. 백오피스에서만 쓰십시오 */
+export function exportRfqInternal(){ save('internal'); }
 
 /* ── 담당자 전달 (메일) ── */
 export function buildMailBody(){

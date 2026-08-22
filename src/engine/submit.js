@@ -7,6 +7,15 @@ import { S, MB_MAIL } from '../state.js';
 import { matchSuppliers, catOf } from './suppliers.js';
 import { rfqNo, summaryCounts, buildMailBody } from './export-rfq.js';
 
+/** 스토리지 경로에 쓸 수 있게 파일명을 정리합니다 (경로 이탈·특수문자 방지) */
+function safeName(name) {
+  return String(name)
+    .replace(/[\\/]/g, '_')          // 경로 구분자 제거
+    .replace(/[^\w.\-가-힣ㄱ-ㅎㅏ-ㅣ ]/g, '_')
+    .replace(/_{2,}/g, '_')
+    .slice(-120) || 'file';
+}
+
 export async function submitRfq() {
   const no = rfqNo();
   const c = summaryCounts();
@@ -19,7 +28,8 @@ export async function submitRfq() {
       .from('rfq')
       .insert({
         rfq_no: no,
-        status: c.no > 0 ? '확인중' : '발송준비',
+        // 진행 상태는 담당자가 정합니다. 접수 시점은 항상 '접수'
+        status: '접수',
         contact: S.ANS.contact || null,
         due: S.ANS.due || null,
         place: S.ANS.place || null,
@@ -77,7 +87,7 @@ export async function submitRfq() {
 
     // 5. 첨부 파일 업로드
     for (const f of S.RAWFILES) {
-      const path = `${no}/${Date.now()}_${f.name}`;
+      const path = `${no}/${Date.now()}_${safeName(f.name)}`;
       const { error: eUp } = await supabase.storage.from('rfq-files').upload(path, f);
       if (eUp) continue;
       await supabase.from('rfq_files').insert({
