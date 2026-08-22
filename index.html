@@ -18,156 +18,115 @@
 <body>
 <div class="progress" id="progress"></div>
 
-<nav class="nav"><div class="wrap">
-  <div class="brand">
-    <span class="logo">METAL BRIDGE<span class="dot">.</span></span>
-    <span class="orgline mono">GRIT CORPORATION</span>
-  </div>
-  <div class="navlinks">
-    <a href="#spec">판독</a><a href="#network">공급망</a><a href="#close">문의</a>
-  </div>
-  <button class="btn btn-outline btn-sm" id="navAsk" type="button">견적 요청</button>
-</div></nav>
+<!-- 상단 바 64px — 로고 / 접수번호 / 상태 -->
+<header class="deskbar"><div class="deskbar-in">
+  <span class="logo">METAL BRIDGE<span class="dot">.</span></span>
+  <span class="deskbar-no mono" id="deskNo">접수번호 미발급</span>
+  <span class="deskbar-state" id="deskState"><i></i><span id="upState">대기</span></span>
+</div></header>
 
-<!-- (1) 히어로 — 업로드가 주인공 -->
-<header class="hero" id="top">
-  <canvas id="heroCanvas"></canvas>
-  <div class="wrap">
-    <div class="hero-grid">
+<!-- 화면 1 — 전체화면 문의창 -->
+<section class="desk" id="desk"><div class="desk-body">
 
-      <div class="hero-copy">
-        <p class="eyebrow">MATERIAL QUOTE BROKERAGE</p>
-        <h1 class="hero-h1">소재 견적, 저희가 대신 받아드립니다</h1>
-        <p class="hero-lead">도면·BOM·메시지를 올리면 사양서로 정리해 견적을 받아 비교표로 돌려드립니다.</p>
-
-        <div class="hero-up">
-          <div class="drop" id="drop" role="button" tabindex="0" aria-label="파일 선택 또는 끌어다 놓기">
-            <div class="up-main">
-              <div class="up-glyph" aria-hidden="true">+</div>
-              <div class="up-text">
-                <b id="upTitle">여기에 도면·BOM을 놓으십시오</b>
-                <span class="mono" id="upState">클릭해서 선택 · 여러 개 가능</span>
-              </div>
-              <span class="btn btn-accent" id="pickBtn">파일 선택</span>
-            </div>
-          </div>
-          <div class="up-entry">
-            <input id="heroIn" placeholder="파일이 없으면 여기에 적어 주십시오 — 예: STS316L 원형봉 ⌀32 1000L 40본"
-              aria-label="필요한 소재를 직접 입력">
-            <button class="btn btn-outline" id="heroSend" type="button">보내기</button>
-          </div>
-          <input type="file" id="fileInput" multiple hidden
-            accept=".pdf,.xlsx,.xls,.csv,.txt,.jpg,.jpeg,.png,.dwg,.dxf,.step,.stp,.zip">
-          <p class="upnote mono">PDF · DWG · DXF · STEP · XLSX · JPG — 다중 선택 가능</p>
-        </div>
-
-        <div class="donebox" id="doneBox" hidden>
-          <div class="donebox-no">
-            <span class="l mono">접수번호</span>
-            <span class="v mono" id="doneNo">—</span>
-          </div>
-          <div class="donebox-sep"></div>
-          <div class="donebox-state"><i></i><span id="doneState">준비 중</span></div>
-          <div class="donebox-act">
-            <button class="btn btn-outline" id="dlRfq2" type="button">요청서 내려받기</button>
-            <button class="btn btn-accent" id="sendStaff" type="button">담당자에게 보내기</button>
-          </div>
-        </div>
+  <div class="desk-main">
+    <div class="drop" id="drop" role="button" tabindex="0" aria-label="파일 선택 또는 끌어다 놓기">
+      <div class="up-glyph" aria-hidden="true">+</div>
+      <div class="up-text">
+        <b id="upTitle">여기에 도면·BOM을 놓으십시오</b>
+        <span class="mono" id="upSub">클릭해서 선택 · 여러 개 가능</span>
       </div>
+      <span class="btn btn-accent" id="pickBtn">파일 선택</span>
+    </div>
+    <input type="file" id="fileInput" multiple hidden
+      accept=".pdf,.xlsx,.xls,.csv,.txt,.jpg,.jpeg,.png,.dwg,.dxf,.step,.stp,.zip">
 
-      <aside class="hero-spec">
-        <div class="hero-spec-h mono">SPECIFICATION</div>
-        <div class="hero-spec-b">
-          <div class="row"><span class="l mono">취급 소재</span><span class="v">스테인리스 · 인코넬 · 티타늄 · 알루미늄 · 특수강</span></div>
-          <div class="row"><span class="l mono">공급망</span><span class="v">한국 · 중국 · 일본 · 인도</span></div>
-          <div class="row"><span class="l mono">접수 형식</span><span class="v">도면 · BOM · 사진 · 텍스트</span></div>
-          <div class="row"><span class="l mono">확인 절차</span><span class="v">판독 → 문답 → 사양서 확정</span></div>
-        </div>
-      </aside>
+    <div class="chatpane" id="askLog">
+      <div class="abub sys"><div class="who">METAL BRIDGE</div>
+        도면 PDF·BOM 엑셀·메신저 텍스트 무엇이든 그대로 보내주십시오.
+        파일이 없으면 필요한 소재를 한 줄로 적어주셔도 됩니다.</div>
+    </div>
 
+    <div class="donebox" id="doneBox" hidden>
+      <div class="donebox-no">
+        <span class="l mono">접수번호</span>
+        <span class="v mono" id="doneNo">—</span>
+      </div>
+      <div class="donebox-sep"></div>
+      <div class="donebox-state pending"><i></i><span id="doneState">아직 전달되지 않았습니다</span></div>
+      <div class="donebox-act">
+        <button class="btn btn-outline" id="dlRfq2" type="button">요청서 내려받기</button>
+        <button class="btn btn-accent" id="sendStaff" type="button">담당자에게 보내기</button>
+      </div>
+    </div>
+
+    <div class="askchips" id="askChips"></div>
+    <div class="askinput">
+      <button class="ic" id="askAttach" type="button" aria-label="파일 첨부">+</button>
+      <input id="askIn" placeholder="필요한 소재를 적으시거나 답변을 입력하십시오">
+      <button class="go" id="askSend" type="button">전송</button>
     </div>
   </div>
-</header>
 
-<!-- (2) 판독 결과 -->
-<section id="spec"><div class="wrap">
+  <aside class="rail">
+    <div class="rail-h">
+      <div class="rail-h-top">
+        <span class="mono rail-label">판독 결과</span>
+        <span class="rail-sum" id="specMeta">자료를 올리면 정리됩니다.</span>
+      </div>
+      <div class="rail-filter" id="specFilter"></div>
+    </div>
+    <div class="rail-b" id="specBody">
+      <div class="empty"><p>아직 올린 자료가 없습니다.<br>왼쪽에 파일을 놓으면 여기에 정리됩니다.</p></div>
+    </div>
+    <div class="rail-f" id="railFoot" hidden>
+      <span class="rail-f-txt"><i></i><span id="railReady">—</span></span>
+      <button class="btn btn-outline btn-sm" id="dlRfqRail" type="button">요청서 내려받기</button>
+    </div>
+  </aside>
+
+</div></section>
+
+<!-- 화면 2 — 거래 흐름 -->
+<section id="flow"><div class="wrap">
   <div class="sec-head rv">
     <div>
-      <p class="step-no mono">02 / 판독 결과</p>
-      <h2 class="h-xl">올리면 이렇게 됩니다</h2>
-    </div>
-    <span class="sec-meta" id="specMeta">—</span>
-  </div>
-  <div class="rv">
-    <div id="specBody">
-      <div class="empty"><div>
-        <p>아직 올린 자료가 없습니다. 위에 파일을 놓으면 이 표가 채워집니다.</p>
-      </div></div>
+      <p class="step-no mono">02 / 거래 흐름</p>
+      <h2 class="h-xl">요청 하나가 네 도시로 나갑니다</h2>
+      <p class="cap flow-lead">사양 일치도로 공급처를 채점해 상위 8곳에 먼저 보냅니다.
+        확정된 품목만 1차로 나가고, 확인이 필요한 품목은 문답을 마친 뒤 2차로 나갑니다.</p>
     </div>
   </div>
-</div></section>
-
-<!-- (3) 확인 문답 -->
-<section id="qa"><div class="wrap">
-  <div class="qa-grid">
-    <div class="rv">
-      <p class="step-no mono">03 / 확인 문답</p>
-      <h2 class="h-xl">대화로 채웁니다</h2>
-      <p class="cap qa-desc">빠진 항목만 묻습니다. 답하면 위 표가 바로 갱신됩니다.
-        규격서가 있으면 대화 중에 그대로 추가하셔도 됩니다.</p>
+  <div class="flow-grid rv">
+    <div class="globe-stage">
+      <canvas id="globeCanvas"></canvas>
+      <div class="globe-labels" id="globeLabels"></div>
     </div>
-    <div class="convo rv">
-      <div class="convo-h mono">CONVERSATION LOG</div>
-      <div class="chatpane" id="askLog">
-        <div class="abub sys"><div class="who">METAL BRIDGE</div>
-          파일을 올리면 판독 과정이 여기에 기록됩니다.</div>
-      </div>
-      <div class="askchips" id="askChips"></div>
-      <div class="askinput">
-        <button class="ic" id="askAttach" type="button" aria-label="파일 첨부">+</button>
-        <input id="askIn" placeholder="답변을 입력하십시오">
-        <button class="go" id="askSend" type="button">전송</button>
-      </div>
-    </div>
+    <div class="zones" id="zones"></div>
+  </div>
+  <div class="flow-notes rv">
+    <p>사양 일치도 상위 8곳에 1차 우선 발송</p>
+    <p>회신은 단가·납기·성적서 조건을 한 장의 비교표로</p>
+    <p>도면 원본은 고객 승인 없이 나가지 않습니다</p>
   </div>
 </div></section>
 
-<!-- (4) 공급망 -->
-<section id="network"><div class="wrap">
-  <div class="sec-head rv">
-    <div>
-      <p class="step-no mono">04 / 공급망</p>
-      <h2 class="h-xl">4개국 공급망에 동시에 물어봅니다</h2>
-    </div>
+<!-- 화면 3 — 회사 소개 -->
+<section id="about"><div class="wrap">
+  <p class="step-no mono rv">03 / 회사 소개</p>
+  <h2 class="about-h rv">GRIT CORPORATION</h2>
+  <p class="about-def rv">그릿코퍼레이션이 운영하는 특수 소재 견적 중개 서비스입니다.
+    도면·BOM을 사양서로 정리해 4개 권역에 같은 조건으로 보내고, 회신을 비교표로 돌려드립니다.</p>
+  <p class="about-who rv"><b>아시아 전역에서 소재가 필요한 제조업체와 유통업체.</b>
+    정밀가공 · 금형 · 피팅/밸브 · 플랜트 기자재.</p>
+  <div class="principles rv">
+    <div><b>단가는 공급처가 냅니다</b><p>저희는 시세나 단가를 제시하지 않습니다. 회신된 견적을 그대로 비교표로 정리해 전달합니다.</p></div>
+    <div><b>도면은 승인 없이 나가지 않습니다</b><p>견적에 필요한 사양 항목만 공급처에 전달합니다. 원본 도면과 프로젝트명은 발송 대상에서 제외됩니다.</p></div>
+    <div><b>공급처는 후보입니다</b><p>목록의 공급처는 실존하지만 거래 이력이 없는 후보입니다. 거래처로 표기하지 않습니다.</p></div>
   </div>
-  <div class="netgrid rv">
-    <div class="netcell"><span class="en">KOREA</span><b>한국</b><p>국내 유통 재고 · 소량 대응</p></div>
-    <div class="netcell"><span class="en">CHINA</span><b>중국</b><p>대량 압연재 · 단가 비교</p></div>
-    <div class="netcell"><span class="en">JAPAN</span><b>일본</b><p>특수강 · 규격 재확인</p></div>
-    <div class="netcell"><span class="en">INDIA</span><b>인도</b><p>피팅 · 플랜지 가공품</p></div>
-  </div>
-  <p class="netnote mono rv">동일 사양서를 4개 권역에 같은 조건으로 발송 → 회신을 한 장의 비교표로 정리</p>
-</div></section>
-
-<!-- (5) 마무리 -->
-<section id="close"><div class="wrap">
-  <div class="close-grid">
-    <div class="rv">
-      <h2 class="close-h">손에 있는 도면 한 장으로<br>시작하십시오</h2>
-      <div class="hero-cta">
-        <button class="btn btn-accent" id="ctaUpload" type="button">파일 올리기</button>
-        <button class="btn btn-outline" id="ctaText" type="button">텍스트로 적기</button>
-      </div>
-      <p class="orgline mono">GRIT CORPORATION · metalbridge.ai</p>
-    </div>
-    <div class="faq rv">
-      <details open><summary>올린 도면은 공개됩니까</summary>
-        <p>공급처에는 견적에 필요한 사양만 전달합니다. 원본 도면은 고객 승인 없이 나가지 않습니다.</p></details>
-      <details><summary>소량도 됩니까</summary>
-        <p>단품 1본도 접수합니다. 수량에 따라 응답 가능한 공급처가 달라집니다.</p></details>
-      <details><summary>얼마나 걸립니까</summary>
-        <p>사양이 확정되면 바로 발송합니다. 회신 시점은 품목과 권역에 따라 다르며 접수 시 안내합니다.</p></details>
-    </div>
+  <div class="about-cta rv">
+    <a class="btn btn-outline" href="mailto:quote@metalbridge.ai">담당자에게 메일</a>
+    <button class="btn btn-accent" id="ctaUpload" type="button">파일 올리기</button>
+    <span class="mono about-mail">quote@metalbridge.ai · metalbridge.ai</span>
   </div>
 </div></section>
 
@@ -192,7 +151,7 @@
       <input id="fabInput" placeholder="예: 316과 316L 차이가 뭡니까" aria-label="질문 입력">
       <button id="fabSend">질문</button>
     </div>
-    <a class="cta" href="#top" id="fabCta">자료 올리고 견적 요청하기 &rarr;</a>
+    <a class="cta" href="#desk" id="fabCta">자료 올리고 견적 요청하기 &rarr;</a>
   </div>
 </div>
 

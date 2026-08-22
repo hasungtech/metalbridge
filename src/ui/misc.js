@@ -11,28 +11,34 @@ export function syncHero(force){
   if(!drop) return;
   var glyph=drop.querySelector('.up-glyph');
   var title=document.getElementById('upTitle');
-  var sub=document.getElementById('upState');
+  var sub=document.getElementById('upSub');
+  var bar=document.getElementById('upState');
+  var deskNo=document.getElementById('deskNo');
   var files=S.picked.length, items=S.ITEMS.length, no=S.ANS.__no||'';
+  var miss=S.ITEMS.filter(function(i){return i.state==='불가';}).length;
   var st;
   if(force==='drag'){
-    st={c:'hot',g:'\u2193',t:'놓으면 바로 판독합니다',s:'파일을 놓으십시오'};
+    st={c:'hot',g:'\u2193',t:'놓으면 바로 판독합니다',s:'파일을 놓으십시오',bar:'드롭 대기'};
   } else if(force==='reading'){
-    st={c:'reading',g:'\u25D0',t:'자료를 읽고 있습니다',s:'파일 '+files+'건 업로드 완료'};
+    st={c:'reading',g:'\u25D0',t:'자료를 읽고 있습니다',s:'파일 '+files+'건 업로드 완료',bar:'판독'};
   } else if(S.SENT||S.MODE==='done'){
-    st={c:'done',g:'\u2713',t:'요청서가 준비되었습니다',s:(no?no+' · ':'')+'품목 '+items+'건'};
+    st={c:'done',g:'\u2713',t:'요청서가 준비되었습니다',s:'품목 '+items+'건',bar:'1차 발송 완료'};
   } else if((S.MODE==='qa'||S.MODE==='extra')&&S.qQueue&&S.qQueue.length){
-    st={c:'done',g:'\u2713',t:'판독을 마쳤습니다',
-        s:'확인 문답 진행 중 · '+Math.min(S.qPos+1,S.qQueue.length)+' / '+S.qQueue.length};
+    var n=Math.min(S.qPos+1,S.qQueue.length);
+    st={c:'done',g:'\u2713',t:'확인 문답 '+n+' / '+S.qQueue.length,s:'답하시면 오른쪽 표가 바로 갱신됩니다',bar:'문답 진행'};
   } else if(items){
-    st={c:'done',g:'\u2713',t:'판독을 마쳤습니다',s:(no?no+' / ':'')+'파일 '+files+'건'};
+    st={c:'done',g:'\u2713',t:'판독을 마쳤습니다',s:'파일 '+files+'건',
+        bar:miss?('확인 필요 '+miss+'건'):'판독 완료'};
   } else {
-    st={c:'',g:'+',t:'여기에 도면·BOM을 놓으십시오',s:'클릭해서 선택 · 여러 개 가능'};
+    st={c:'',g:'+',t:'여기에 도면·BOM을 놓으십시오',s:'클릭해서 선택 · 여러 개 가능',bar:'대기'};
   }
   drop.classList.remove('hot','reading','done');
   if(st.c) drop.classList.add(st.c);
   if(glyph) glyph.textContent=st.g;
   if(title) title.textContent=st.t;
   if(sub) sub.textContent=st.s;
+  if(bar) bar.textContent=st.bar;
+  if(deskNo) deskNo.textContent = no ? ('접수번호 '+no) : '접수번호 미발급';
 }
 
 export function initMisc(){
@@ -92,16 +98,15 @@ SUGGEST.forEach(function(q){
   fabChips.appendChild(b);
 });
 /* ══════════ 히어로 업로드 영역으로 보내기 ══════════ */
-function toHero(focusText){
-  var top=document.getElementById('top');
-  if(top) top.scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'});
-  if(!focusText) return;
-  var hi=document.getElementById('heroIn');
-  if(hi) setTimeout(function(){ hi.focus(); }, reduce?0:420);
+function toDesk(){
+  var d=document.getElementById('desk');
+  if(d) d.scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'});
+  var inp=document.getElementById('askIn');
+  if(inp) setTimeout(function(){ inp.focus(); }, reduce?0:420);
 }
-[['navAsk',false],['ctaUpload',false],['ctaText',true]].forEach(function(pair){
-  var el=document.getElementById(pair[0]);
-  if(el) el.addEventListener('click',function(){ toHero(pair[1]); });
+['ctaUpload','fabCta'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el) el.addEventListener('click',toDesk);
 });
 
 /* ══════════ 내부 링크는 페이지 이동 없이 스크롤 ══════════ */

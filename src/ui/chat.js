@@ -180,14 +180,6 @@ function submit(text){
 document.getElementById('askSend').addEventListener('click',function(){ submit(askIn.value); });
 askIn.addEventListener('keydown',function(e){ if(e.key==='Enter') submit(this.value); });
 
-// 히어로의 직접 입력 — 파일이 없는 방문자를 위한 같은 진입점
-var heroIn=document.getElementById('heroIn'), heroSend=document.getElementById('heroSend');
-function heroSubmit(){
-  if(!heroIn || !heroIn.value.trim()) return;
-  submit(heroIn.value); heroIn.value='';
-}
-if(heroSend) heroSend.addEventListener('click',heroSubmit);
-if(heroIn) heroIn.addEventListener('keydown',function(e){ if(e.key==='Enter') heroSubmit(); });
 
 function askExtra(){
   S.MODE='extra';

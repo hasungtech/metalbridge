@@ -1,129 +1,203 @@
-/** 히어로 3D — 교체·삭제해도 엔진에 영향 없음 */
-import * as THREE from 'three';
+/** 거래 흐름 지구본 — 정사영(orthographic) · 실제 지리 데이터
+ *  Natural Earth countries-110m (world-atlas, ISC) 를 topojson.mesh() 로 해안선·국경으로 만들고,
+ *  각 점을 단위 벡터로 미리 변환해 두었다가 프레임마다 회전 행렬만 적용합니다.
+ *  DOM: #globeCanvas, #globeLabels, #zones
+ */
 import { reduce } from '../state.js';
+import { feature, mesh } from 'topojson-client';
+
+/* 권역 — README v4. 배치는 matchSuppliers() 의 1차/2차 기준입니다. */
+export const ZONES = [
+  { key:'kr', en:'BUSAN',    ko:'부산 · 한국',   lat:35.18, lon:129.08,
+    good:'국내 유통 재고 · 소량 대응',   batch:'1차', meta:'최단 납기 · 검수 직접 수행', dir:'up-left' },
+  { key:'cn', en:'SHANGHAI', ko:'상하이 · 중국', lat:31.23, lon:121.47,
+    good:'대량 압연재 · 단가 비교',      batch:'1차', meta:'대형 밀 · 성적서 검증 필요', dir:'down-left' },
+  { key:'jp', en:'OSAKA',    ko:'오사카 · 일본', lat:34.69, lon:135.50,
+    good:'특수강 · 규격 재확인',         batch:'1차', meta:'품질 안정 · 소량 대응', dir:'right' },
+  { key:'in', en:'MUMBAI',   ko:'뭄바이 · 인도', lat:19.08, lon:72.88,
+    good:'피팅 · 플랜지 가공품',         batch:'2차', meta:'대량 물량 · 대체 강종 제안', dir:'right' },
+];
+const HUB = ZONES[0];
+
+const D2R = Math.PI / 180;
+const unit = (lat, lon) => {
+  const p = (90 - lat) * D2R, t = (lon + 180) * D2R;
+  return [-(Math.sin(p) * Math.cos(t)), Math.cos(p), Math.sin(p) * Math.sin(t)];
+};
+
+/** 두 지점 사이 대권 경로 */
+function greatCircle(a, b, n){
+  const A = unit(a.lat, a.lon), B = unit(b.lat, b.lon);
+  const dot = Math.max(-1, Math.min(1, A[0]*B[0] + A[1]*B[1] + A[2]*B[2]));
+  const om = Math.acos(dot), s = Math.sin(om);
+  const out = [];
+  for(let i = 0; i <= n; i++){
+    const t = i / n;
+    const k1 = s < 1e-6 ? 1 - t : Math.sin((1 - t) * om) / s;
+    const k2 = s < 1e-6 ? t     : Math.sin(t * om) / s;
+    const v = [A[0]*k1 + B[0]*k2, A[1]*k1 + B[1]*k2, A[2]*k1 + B[2]*k2];
+    const m = Math.hypot(v[0], v[1], v[2]);
+    out.push([v[0]/m * 1.012, v[1]/m * 1.012, v[2]/m * 1.012]);
+  }
+  return out;
+}
+
+/** 경선 30° · 위선 30° */
+function graticule(){
+  const lines = [];
+  for(let lon = -180; lon < 180; lon += 30){
+    const l = []; for(let lat = -80; lat <= 80; lat += 4) l.push(unit(lat, lon));
+    lines.push(l);
+  }
+  for(let lat = -60; lat <= 60; lat += 30){
+    const l = []; for(let lon = -180; lon <= 180; lon += 4) l.push(unit(lat, lon));
+    lines.push(l);
+  }
+  return lines;
+}
+
 export function initScene(){
-function envTexture(renderer){
-  var c=document.createElement('canvas'); c.width=512; c.height=256;
-  var g=c.getContext('2d');
-  var grd=g.createLinearGradient(0,0,0,256);
-  grd.addColorStop(0,'#2b2c30'); grd.addColorStop(.42,'#8f939a');
-  grd.addColorStop(.5,'#f2f3f5'); grd.addColorStop(.62,'#5f6268'); grd.addColorStop(1,'#0f1012');
-  g.fillStyle=grd; g.fillRect(0,0,512,256);
-  g.fillStyle='rgba(255,255,255,.7)';
-  g.fillRect(40,60,150,24); g.fillRect(300,42,120,16); g.fillRect(190,150,240,9);
-  g.fillStyle='rgba(15,98,254,.55)'; g.fillRect(0,112,58,42);
-  var tex=new THREE.Texture(c); tex.needsUpdate=true;
-  tex.mapping=THREE.EquirectangularReflectionMapping;
-  var pm=new THREE.PMREMGenerator(renderer); pm.compileEquirectangularShader();
-  var rt=pm.fromEquirectangular(tex); tex.dispose(); pm.dispose();
-  return rt.texture;
-}
-function brushed(){
-  var c=document.createElement('canvas'); c.width=256; c.height=256;
-  var g=c.getContext('2d'); g.fillStyle='#8a8a8a'; g.fillRect(0,0,256,256);
-  for(var i=0;i<2400;i++){
-    var v=110+Math.random()*90;
-    g.fillStyle='rgba('+v+','+v+','+v+',.34)';
-    g.fillRect(Math.random()*256,Math.random()*256,Math.random()*38+8,1);
-  }
-  var t=new THREE.Texture(c); t.needsUpdate=true;
-  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(4,4);
-  return t;
-}
-var steelMat=null;
-function material(){
-  if(!steelMat) steelMat=new THREE.MeshStandardMaterial({
-    color:0x9aa0a6, metalness:.92, roughness:.42, roughnessMap:brushed(), side:THREE.DoubleSide});
-  return steelMat;
-}
-function makeScene(canvas,opts){
-  var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, window.innerWidth<700?1.5:2));
-  if(renderer.outputEncoding!==undefined) renderer.outputEncoding=THREE.sRGBEncoding;
-  var scene=new THREE.Scene();
-  scene.environment=envTexture(renderer);
-  var cam=new THREE.PerspectiveCamera(opts.fov||38,1,.1,100);
-  cam.position.set(0,opts.camY,opts.camZ); cam.lookAt(0,0,0);
-  var key=new THREE.DirectionalLight(0xffffff,1.4); key.position.set(4,6,5); scene.add(key);
-  var fill=new THREE.DirectionalLight(0xdfe6ef,.65); fill.position.set(-6,2,-3); scene.add(fill);
-  if(opts.rim){ var rim=new THREE.PointLight(0x0f62fe,opts.rim,22); rim.position.set(-3.4,-1.4,2.6); scene.add(rim); }
-  scene.add(new THREE.AmbientLight(0xffffff,.24));
-  function resize(){
-    var r=canvas.getBoundingClientRect();
-    var w=Math.max(r.width,1), h=Math.max(r.height,1);
-    renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix();
-  }
-  resize(); window.addEventListener('resize',resize);
-  return {renderer:renderer,scene:scene,cam:cam,resize:resize};
-}
-function tube(outer,inner,h,seg){
-  var pts=[new THREE.Vector2(inner,-h/2),new THREE.Vector2(outer,-h/2),
-           new THREE.Vector2(outer,h/2),new THREE.Vector2(inner,h/2),new THREE.Vector2(inner,-h/2)];
-  var g=new THREE.LatheGeometry(pts,seg||96); g.computeVertexNormals(); return g;
-}
-function plate(){ return new THREE.BoxGeometry(3.2,.16,2.1); }
-function billet(){ return new THREE.BoxGeometry(.95,.95,3.6); }
-function pipe(){ var g=tube(.55,.42,3.4,64); g.rotateZ(Math.PI/2); return g; }
-function coil(){ return tube(1.62,.78,1.25,128); }
-function hBeam(){
-  var s=new THREE.Shape(), w=1.15,h=1.7,tf=.2,tw=.16;
-  s.moveTo(-w/2,-h/2); s.lineTo(w/2,-h/2); s.lineTo(w/2,-h/2+tf); s.lineTo(tw/2,-h/2+tf);
-  s.lineTo(tw/2,h/2-tf); s.lineTo(w/2,h/2-tf); s.lineTo(w/2,h/2); s.lineTo(-w/2,h/2);
-  s.lineTo(-w/2,h/2-tf); s.lineTo(-tw/2,h/2-tf); s.lineTo(-tw/2,-h/2+tf); s.lineTo(-w/2,-h/2+tf);
-  s.closePath();
-  var g=new THREE.ExtrudeGeometry(s,{depth:3.6,bevelEnabled:true,bevelSize:.02,bevelThickness:.02,bevelSegments:2});
-  g.center(); g.rotateY(Math.PI/2.2); return g;
-}
+  const cv = document.getElementById('globeCanvas');
+  if(!cv) return;
+  const labelBox = document.getElementById('globeLabels');
+  const css = getComputedStyle(document.documentElement);
+  const tok = n => css.getPropertyValue(n).trim() || '#999';
+  const C = { line:tok('--stone'), grid:tok('--hairline-soft'), rim:tok('--hairline'),
+              hot:tok('--molten'), dim:tok('--hairline'), node:tok('--charcoal'), flow:tok('--blue-lo') };
 
-/* ── 히어로 ── */
-var heroEl=document.getElementById('heroCanvas');
-var hero=makeScene(heroEl,{camY:.6,camZ:6.4,rim:6});
-var heroGroup=new THREE.Group();
-var heroCoil=new THREE.Mesh(coil(),material());
-heroCoil.rotation.x=Math.PI/2.6; heroCoil.rotation.z=.18; heroGroup.add(heroCoil);
-var ring=new THREE.Mesh(tube(1.72,1.66,1.3,96),
-  new THREE.MeshStandardMaterial({color:0x8d9196,metalness:1,roughness:.55,side:THREE.DoubleSide}));
-ring.rotation.copy(heroCoil.rotation); heroGroup.add(ring);
-var slab=new THREE.Mesh(plate(),material());
-slab.position.set(2.55,-1.5,-1.4); slab.rotation.set(.12,-.5,.06); slab.scale.setScalar(.85); heroGroup.add(slab);
-var bar=new THREE.Mesh(billet(),material());
-bar.position.set(-2.8,-1.35,-.8); bar.rotation.set(0,.42,.1); bar.scale.setScalar(.8); heroGroup.add(bar);
-heroGroup.scale.setScalar(.82); heroGroup.position.x=1.75;
-hero.scene.add(heroGroup);
+  let land = [];
+  const grid = graticule();
+  const paths = ZONES.slice(1).map((z, i) => ({ key:z.key, phase:i/3, pts:greatCircle(HUB, z, 64) }));
+  let rot = 108, dir = 1, drag = null, hover = null, vis = true;
 
-/* ── 소재 뷰어 ── */
-/* ── 인터랙션 ── */
-var pointer={x:0,y:0}, drag={on:false,x:0,val:0,tgt:null};
-window.addEventListener('pointermove',function(e){
-  pointer.x=(e.clientX/window.innerWidth-.5);
-  pointer.y=(e.clientY/window.innerHeight-.5);
-  if(drag.on){ drag.val+=(e.clientX-drag.x)*.006; drag.x=e.clientX; }
-});
-[heroEl].forEach(function(c){
-  c.addEventListener('pointerdown',function(e){ drag.on=true; drag.x=e.clientX; drag.tgt=c; c.setPointerCapture(e.pointerId); });
-  c.addEventListener('pointerup',function(){ drag.on=false; });
-  c.addEventListener('pointercancel',function(){ drag.on=false; });
-});
-var vis={hero:true};
-(function(){
-  var map=[[heroEl,'hero']];
-  var io2=new IntersectionObserver(function(es){
-    es.forEach(function(e){
-      map.forEach(function(m){ if(m[0]===e.target) vis[m[1]]=e.isIntersecting; });
+  /* 지리 데이터는 같은 출처에서 지연 로드합니다 (외부 네트워크 없음) */
+  fetch('/geo/countries-110m.json')
+    .then(r => r.json())
+    .then(topo => {
+      const m = mesh(topo, topo.objects.countries);
+      land = m.coordinates.map(line => line.map(p => unit(p[1], p[0])));
+      void feature;
+    })
+    .catch(() => { /* 데이터를 못 받으면 격자와 경로만 그립니다 */ });
+
+  function size(){
+    const r = cv.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.max(1, r.width * dpr);
+    cv.height = Math.max(1, r.height * dpr);
+    return { w:r.width, h:r.height, dpr };
+  }
+
+  /** Y축 회전 후 정사영. z>0 인 앞면만 그립니다. */
+  function project(v, cx, cy, R, cos, sin){
+    const x = v[0]*cos + v[2]*sin, z = -v[0]*sin + v[2]*cos;
+    return [cx + x*R, cy - v[1]*R, z];
+  }
+
+  function strokePolyline(ctx, pts, cx, cy, R, cos, sin, color, width){
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath();
+    let pen = false;
+    for(const v of pts){
+      const p = project(v, cx, cy, R, cos, sin);
+      if(p[2] < 0){ pen = false; continue; }
+      if(pen) ctx.lineTo(p[0], p[1]); else { ctx.moveTo(p[0], p[1]); pen = true; }
+    }
+    ctx.stroke();
+  }
+
+  let t0 = performance.now();
+  function frame(now){
+    if(vis){
+      const { w, h, dpr } = size();
+      const ctx = cv.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const cx = w/2, cy = h/2, R = Math.min(w, h)/2 - 12;
+
+      if(!reduce && !drag && hover === null){
+        rot += 0.04 * dir;
+        if(rot > 132) dir = -1;
+        if(rot < 86)  dir = 1;
+      }
+      // rot 이 화면 중심 경도가 되도록 90° 보정 (명세: 86~132° 왕복이면 네 도시가 항상 보임)
+      const a = -(rot + 90) * D2R, cos = Math.cos(a), sin = Math.sin(a);
+
+      ctx.strokeStyle = C.rim; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.stroke();
+      for(const g of grid) strokePolyline(ctx, g, cx, cy, R, cos, sin, C.grid, 1);
+      for(const l of land) strokePolyline(ctx, l, cx, cy, R, cos, sin, C.line, 1);
+
+      const t = Math.max(0, now - t0) / 1000;
+      paths.forEach(function(pp){
+        const on = hover === null || hover === pp.key;
+        strokePolyline(ctx, pp.pts, cx, cy, R, cos, sin, on ? C.hot : C.dim, on ? 1.4 : 1);
+        const u = (t * 0.18 + pp.phase) % 1;
+        const idx = Math.min(pp.pts.length - 1, Math.max(0, Math.round(u * (pp.pts.length - 1))));
+        const p = project(pp.pts[idx], cx, cy, R, cos, sin);
+        if(p[2] >= 0){
+          ctx.fillStyle = on ? C.hot : C.flow;
+          ctx.beginPath(); ctx.arc(p[0], p[1], 2.6, 0, Math.PI*2); ctx.fill();
+        }
+      });
+
+      ZONES.forEach(function(z, i){
+        const p = project(unit(z.lat, z.lon), cx, cy, R, cos, sin);
+        const front = p[2] >= 0;
+        if(front){
+          ctx.fillStyle = (hover === null || hover === z.key) ? C.hot : C.node;
+          ctx.beginPath(); ctx.arc(p[0], p[1], i === 0 ? 4.5 : 3.5, 0, Math.PI*2); ctx.fill();
+        }
+        const el = labelBox && labelBox.children[i];
+        if(el){
+          el.style.display = front ? 'block' : 'none';
+          el.style.left = p[0] + 'px';
+          el.style.top  = p[1] + 'px';
+        }
+      });
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* 라벨 오버레이 — 노드마다 방향이 달라야 부산·오사카가 겹치지 않습니다 */
+  if(labelBox){
+    labelBox.innerHTML = ZONES.map(z =>
+      '<span class="glabel dir-'+z.dir+'"><b>'+z.en+'</b><i>'+z.ko.split(' · ')[1]+'</i></span>').join('');
+  }
+
+  /* 권역 목록 + 호버 연동 */
+  const zoneBox = document.getElementById('zones');
+  if(zoneBox){
+    zoneBox.innerHTML = ZONES.map(z =>
+      '<div class="zone" data-k="'+z.key+'">'+
+        '<div class="zone-top"><i class="'+(z.batch==='1차'?'on':'')+'"></i>'+
+          '<span class="zone-en">'+z.en+'</span>'+
+          '<span class="zone-batch mono">'+(z.batch==='1차'?'1차 발송':'2차 대기')+'</span></div>'+
+        '<b class="zone-ko">'+z.ko+'</b>'+
+        '<p class="zone-good">'+z.good+'</p>'+
+        '<p class="zone-meta mono">'+z.meta+'</p>'+
+      '</div>').join('');
+    Array.prototype.forEach.call(zoneBox.children, function(row){
+      row.addEventListener('mouseenter', function(){ hover = row.dataset.k; });
+      row.addEventListener('mouseleave', function(){ hover = null; });
     });
-  },{threshold:0});
-  map.forEach(function(m){ io2.observe(m[0]); });
-})();
-var t0=performance.now();
-function frame(now){
-  var t=(now-t0)/1000;
-  if(!reduce){
-    heroGroup.rotation.y=t*.15+(drag.tgt===heroEl?drag.val:0);
-    heroGroup.rotation.x=pointer.y*.1;
-    heroGroup.position.y=Math.sin(t*.7)*.06;
   }
-  if(vis.hero) hero.renderer.render(hero.scene,hero.cam);
+
+  cv.addEventListener('pointerdown', function(e){
+    drag = { x:e.clientX, r:rot }; cv.setPointerCapture(e.pointerId);
+  });
+  cv.addEventListener('pointermove', function(e){
+    if(drag) rot = drag.r + (e.clientX - drag.x) * 0.4;
+  });
+  ['pointerup','pointercancel'].forEach(function(ev){
+    cv.addEventListener(ev, function(){
+      if(!drag) return;
+      drag = null;
+      rot = Math.max(86, Math.min(132, ((rot % 360) + 360) % 360));  // 왕복 범위로 복귀
+    });
+  });
+
+  new IntersectionObserver(function(es){ es.forEach(function(e){ vis = e.isIntersecting; }); },
+    { threshold:0 }).observe(cv);
+
   requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
 }
