@@ -46,14 +46,22 @@ $('admForm').addEventListener('submit', async (e) => {
   if (!email) return;
   const btn = $('admSend');
   btn.disabled = true; btn.textContent = '보내는 중…';
+  // shouldCreateUser:false — 미리 초대된 담당자만 링크를 받습니다.
+  // 켜두면 아무나 자기 주소로 계정을 만들어 authenticated 가 되고,
+  // RLS 의 staff 정책이 using(true) 라 문의·공급처 명단을 전부 봅니다.
+  // 익명 키는 번들에 노출되므로 이 플래그는 화면 보호일 뿐입니다 —
+  // 실제 차단은 Supabase 대시보드의 회원가입 비활성화가 합니다.
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: window.location.origin + '/admin' },
+    options: {
+      emailRedirectTo: window.location.origin + '/admin',
+      shouldCreateUser: false,
+    },
   });
   btn.disabled = false; btn.textContent = '로그인 링크 받기';
   $('admMsg').textContent = error
     ? '보내지 못했습니다 — ' + error.message
-    : '메일함을 확인하십시오. 링크를 누르면 이 화면으로 돌아옵니다.';
+    : '메일함을 확인하십시오. 링크를 누르면 이 화면으로 돌아옵니다. 등록된 담당자만 받습니다.';
 });
 
 $('admOut').addEventListener('click', async () => {

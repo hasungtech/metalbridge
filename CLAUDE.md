@@ -146,6 +146,11 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 **백오피스는 xlsx·pdf 청크를 받지 않습니다** — 무거운 파서를 담당자 화면에 끌어오지 마십시오.
 `/admin` 은 로그인 전에는 아무것도 렌더하지 않고, 데이터 차단은 전적으로 RLS 가 합니다.
 
+**담당자는 초대로만 늘립니다.** `staff` 정책이 `using (true)` 라 `authenticated` 가 되면
+문의 전건과 공급처 명단을 봅니다. 매직링크는 `shouldCreateUser: false` 로 보내고
+(`admin/main.js`), 실제 차단은 Supabase 대시보드의 **회원가입 비활성화**가 합니다 —
+익명 키가 번들에 있으니 클라이언트 플래그만으로는 막지 못합니다.
+
 ## 화면 구성 (v4)
 
 메인은 화면 3개입니다. 설명형 섹션은 없습니다.
