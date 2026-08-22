@@ -48,6 +48,27 @@ CLAUDE.md 의 "공급처 목록이 공개되면 안 됩니다" 규칙 위반입�
 - 영향: engine/export-rfq.js · engine/submit.js · supabase/*.sql · CLAUDE.md
 - 확인: 고객 파일 시트 `① ③ ④` — 공급처 목록 없음 · npm test 3건 통과
 
+### SQL 을 실제 Postgres 16 에 돌려 검증하다 버그 3건을 잡았습니다
+- **`qty` 제약이 틀림** — `rfq_items.qty` 는 integer 인데 `length(coalesce(qty,''))` 로
+  text 취급 → 마이그레이션 자체가 실패. 정수 범위 검사로 수정
+- **`INSERT ... RETURNING` 이 원래부터 실패하던 문제** — `submit.js` 의
+  `.insert().select('id')` 는 SELECT 권한과 **SELECT 정책**을 둘 다 요구합니다.
+  익명에게 SELECT 정책이 없으므로 이 경로는 처음부터 동작하지 않았고,
+  모든 접수가 `catch` 로 빠져 메일 폴백으로 갔을 것입니다.
+  → 익명에게 조회를 열지 않기 위해 **id 를 클라이언트에서 만들어** 되돌려받지 않도록 변경
+- **`authenticated` grant 누락** — Supabase 기본 grant 에 의존하고 있었습니다. 명시적으로 부여
+
+검증(로컬 PG16, Supabase 역할·storage 스키마 흉내):
+```
+schema.sql → 마이그레이션 → 재실행       오류 0
+익명 접수 5개 테이블 전부                 성공
+익명: rfq · rfq_board · suppliers 조회    전부 거부
+익명: 상태 임의지정 · 접수번호 형식 위반 · memo 쓰기 ·
+      2000자 초과 · 없는 rfq_id           전부 거부
+담당자: rfq_board 조회                    정상
+버킷: public=false · 50MB · MIME 17종
+```
+
 ## 2026-08-22 · 브랜드 소개 화면을 첫 화면으로 (v4 TF 1번 되돌림)
 운영자 요청으로 문의창 앞에 브랜드 소개 화면을 둡니다.
 v4 TF 검토 1번("설명 섹션 전부 삭제, 첫 화면을 문의창 자체로")과 반대 방향이라,
