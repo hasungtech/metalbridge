@@ -6,19 +6,18 @@
 import { reduce } from '../state.js';
 import { feature, mesh } from 'topojson-client';
 import { SUPPLIER_MASTER } from '../engine/suppliers.js';
+import { t, onLangChange } from '../i18n/index.js';
 
 /* 나라 단위입니다. 도시 이름은 쓰지 않습니다 — 발송은 국가 단위로 나갑니다.
    lat/lon 은 지구본에 점을 찍을 좌표일 뿐이고 화면에 도시명으로 드러나지 않습니다.
    배치는 matchSuppliers() 의 1차/2차 기준입니다. */
+/* ko 는 공급처 마스터를 세는 키입니다 — 마스터의 국가명이 한국어라 번역하지 않습니다.
+   화면 문구는 i18n 사전 zone.* 에서 가져옵니다. */
 export const ZONES = [
-  { key:'kr', en:'KOREA', ko:'한국', lat:35.18, lon:129.08,
-    good:'국내 유통 재고 · 소량 대응',   batch:'1차', meta:'최단 납기 · 검수 직접 수행', dir:'up-left' },
-  { key:'cn', en:'CHINA', ko:'중국', lat:31.23, lon:121.47,
-    good:'대량 압연재 · 단가 비교',      batch:'1차', meta:'대형 밀 · 성적서 검증 필요', dir:'down-left' },
-  { key:'jp', en:'JAPAN', ko:'일본', lat:34.69, lon:135.50,
-    good:'특수강 · 규격 재확인',         batch:'1차', meta:'품질 안정 · 소량 대응', dir:'right' },
-  { key:'in', en:'INDIA', ko:'인도', lat:19.08, lon:72.88,
-    good:'피팅 · 플랜지 가공품',         batch:'2차', meta:'대량 물량 · 대체 강종 제안', dir:'down-left', ny:18 },
+  { key:'kr', en:'KOREA', ko:'한국', lat:35.18, lon:129.08, batch:'1차', dir:'up-left' },
+  { key:'cn', en:'CHINA', ko:'중국', lat:31.23, lon:121.47, batch:'1차', dir:'down-left' },
+  { key:'jp', en:'JAPAN', ko:'일본', lat:34.69, lon:135.50, batch:'1차', dir:'right' },
+  { key:'in', en:'INDIA', ko:'인도', lat:19.08, lon:72.88,  batch:'2차', dir:'down-left', ny:18 },
 ];
 const HUB = ZONES[0];
 
@@ -173,28 +172,35 @@ export function initScene(){
   }
 
   /* 라벨 오버레이 — 노드마다 방향이 달라야 한국·일본이 겹치지 않습니다 */
-  if(labelBox){
-    /* ny — 지구본이 작아지면 중국과 인도가 같은 높이로 붙습니다. 인도만 내려 어긋냅니다. */
+  function paintLabels(){
+    if(!labelBox) return;
     labelBox.innerHTML = ZONES.map(z =>
       '<span class="glabel dir-'+z.dir+'"'+(z.ny ? ' style="margin-top:'+z.ny+'px"' : '')+'>'+
-      '<b>'+z.en+'</b><i>후보 '+supplierCount(z.ko)+'</i></span>').join('');
+      '<b>'+z.en+'</b><i>'+t('flow.candidate',{n:supplierCount(z.ko)})+'</i></span>').join('');
+  }
+  if(labelBox){
+    /* ny — 지구본이 작아지면 중국과 인도가 같은 높이로 붙습니다. 인도만 내려 어긋냅니다. */
+    paintLabels();
   }
 
   /* 권역 — 지구본이 소개 화면으로 올라갔으므로 여기는 숫자가 주인공입니다.
      지구본과 떨어져 있어 호버 연동은 뜻이 없어 뺐습니다. */
-  const zoneBox = document.getElementById('zones');
-  if(zoneBox){
+  function paintZones(){
+    const zoneBox = document.getElementById('zones');
+    if(!zoneBox) return;
     zoneBox.innerHTML = ZONES.map(z =>
       '<div class="zone" data-k="'+z.key+'">'+
         '<span class="zone-en">'+z.en+'</span>'+
-        '<b class="zone-ko">'+z.ko+'</b>'+
-        '<p class="zone-n"><span class="mono">'+supplierCount(z.ko)+'</span>곳</p>'+
-        '<p class="zone-good">'+z.good+'</p>'+
-        '<p class="zone-meta mono">'+z.meta+'</p>'+
+        '<b class="zone-ko">'+t('zone.'+z.key+'.ko')+'</b>'+
+        '<p class="zone-n"><span class="mono">'+supplierCount(z.ko)+'</span>'+t('flow.unit')+'</p>'+
+        '<p class="zone-good">'+t('zone.'+z.key+'.good')+'</p>'+
+        '<p class="zone-meta mono">'+t('zone.'+z.key+'.meta')+'</p>'+
         '<p class="zone-batch mono"><i class="'+(z.batch==='1차'?'on':'')+'"></i>'+
-          (z.batch==='1차'?'1차 발송':'2차 대기')+'</p>'+
+          t(z.batch==='1차'?'flow.batch1':'flow.batch2')+'</p>'+
       '</div>').join('');
   }
+  paintZones();
+  onLangChange(function(){ paintZones(); paintLabels(); });
 
   cv.addEventListener('pointerdown', function(e){
     drag = { x:e.clientX, r:rot }; cv.setPointerCapture(e.pointerId);

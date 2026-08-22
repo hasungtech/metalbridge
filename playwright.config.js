@@ -10,6 +10,9 @@ export default defineConfig({
   timeout: 60000,
   use: {
     baseURL: 'http://localhost:5173',
+    /* 기준 언어를 한국어로 고정합니다. i18n 이 브라우저 언어를 따라가므로
+       고정하지 않으면 실행 환경에 따라 화면 문구가 달라져 기대값이 흔들립니다. */
+    locale: 'ko-KR',
     ...(exe ? { launchOptions: { executablePath: exe } } : {}),
   },
   webServer: {

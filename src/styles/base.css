@@ -54,6 +54,17 @@ input,textarea,select{font-family:inherit}
 .deskbar-send:empty{display:none}
 .deskbar-cta{flex:none;margin-left:var(--md)}
 
+/* 언어 전환 — 알약 하나에 4칸. 파란색을 쓰지 않고 선택만 반전시킵니다 */
+.langsw{display:flex;flex:none;border:1px solid var(--hairline);
+  border-radius:var(--pill);overflow:hidden}
+.langsw button{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
+  padding:5px 9px;border:0;border-right:1px solid var(--hairline);background:none;
+  color:var(--mute);cursor:pointer;line-height:1.4}
+.langsw button:last-child{border-right:0}
+.langsw button[aria-pressed="true"]{background:var(--ink);color:var(--canvas)}
+.langsw button:hover[aria-pressed="false"]{color:var(--ink)}
+.langsw button:focus-visible{outline:2px solid var(--molten);outline-offset:-2px}
+
 /* ── 화면 0 — 브랜드 소개 ──
    지구본이 오른쪽으로 잘려 나가고 문구는 왼쪽에 놓입니다. 지구본은 .wrap 밖의
    절대 배치라 화면 폭 전체를 쓰고, overflow:hidden 이 잘라냅니다. */
@@ -299,6 +310,29 @@ footer{padding:var(--xl) 0;border-bottom:0}
   background:var(--molten);color:#fff;font-size:13px;font-weight:600}
 .aiwin .cta{display:block;text-align:center;font-size:12px;font-weight:600;color:var(--molten);padding:9px 0 2px}
 
+/* ── 일본어·중국어는 어절 경계가 없습니다 ──
+   word-break:keep-all 은 한국어에서 어절이 잘리지 않게 하려고 건 것인데,
+   띄어쓰기가 없는 일본어·중국어에서는 줄바꿈 자체를 막아 한 줄이 화면을 넘습니다.
+   해당 언어에서만 글자 단위 줄바꿈으로 되돌립니다 (line-break:strict 로
+   구두점이 줄머리에 오지 않게 합니다). */
+html[lang="ja"], html[lang="zh"]{ line-break:strict }
+html[lang="ja"] .h-xl, html[lang="zh"] .h-xl,
+html[lang="ja"] .cap, html[lang="zh"] .cap,
+html[lang="ja"] .intro-h, html[lang="zh"] .intro-h,
+html[lang="ja"] .intro-lead, html[lang="zh"] .intro-lead,
+html[lang="ja"] .intro-facts dd, html[lang="zh"] .intro-facts dd,
+html[lang="ja"] .up-text b, html[lang="zh"] .up-text b,
+html[lang="ja"] .rail-sum, html[lang="zh"] .rail-sum,
+html[lang="ja"] .flow-note, html[lang="zh"] .flow-note,
+html[lang="ja"] .zone-good, html[lang="zh"] .zone-good,
+html[lang="ja"] .zone-meta, html[lang="zh"] .zone-meta,
+html[lang="ja"] .flow-notes p, html[lang="zh"] .flow-notes p,
+html[lang="ja"] .about-def, html[lang="zh"] .about-def,
+html[lang="ja"] .about-who, html[lang="zh"] .about-who,
+html[lang="ja"] .principles b, html[lang="zh"] .principles b,
+html[lang="ja"] .principles p, html[lang="zh"] .principles p,
+html[lang="ja"] .card-issues, html[lang="zh"] .card-issues{ word-break:normal }
+
 /* ── 반응형 ── */
 @media(max-width:1180px){
   .desk-body{grid-template-columns:1fr 460px}
@@ -321,7 +355,13 @@ footer{padding:var(--xl) 0;border-bottom:0}
   .deskbar-in{padding:0 20px;gap:var(--md)}
   .deskbar-no{display:none}
   .deskbar-state{display:none}
-  .deskbar-cta{margin-left:auto}
+  /* 좁은 바에 로고 · 언어 4칸 · CTA 를 함께 넣습니다.
+     중국어 CTA(发起询价)가 가장 넓어 여기에 맞춰 여백을 줄였습니다. */
+  .langsw{margin-left:auto}
+  .deskbar-cta{margin-left:var(--sm);padding:8px 14px;font-size:12px;white-space:nowrap}
+  .langsw button{padding:5px 5px;font-size:10px;letter-spacing:.01em}
+  .deskbar-in{gap:var(--sm)}
+  .logo{min-width:0;overflow:hidden;text-overflow:ellipsis}
   .logo{font-size:15px}
   /* 세로 화면에서는 지구본을 문구 뒤에 깔면 글이 안 읽힙니다.
      흐름에서 빼내 문구 아래 정사각형 한 장으로 세웁니다 —
