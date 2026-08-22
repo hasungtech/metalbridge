@@ -41,7 +41,7 @@ export function syncHero(force){
   if(title) title.textContent=st.t;
   if(sub) sub.textContent=st.s;
   if(bar) bar.textContent=st.bar;
-  if(deskNo) deskNo.textContent = no ? ('접수번호 '+no) : '접수번호 미발급';
+  if(deskNo) deskNo.textContent = no ? ('접수번호 '+no) : '';
   if(deskState){ deskState.classList.remove('live','busy'); if(st.dot) deskState.classList.add(st.dot); }
   if(deskSend){
     var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;
@@ -110,9 +110,10 @@ function toDesk(){
   var d=document.getElementById('desk');
   if(d) d.scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'});
   var inp=document.getElementById('askIn');
-  if(inp) setTimeout(function(){ inp.focus(); }, reduce?0:420);
+  // preventScroll 없이 포커스하면 브라우저가 입력줄을 보이게 하려고 스크롤을 다시 잡습니다
+  if(inp) setTimeout(function(){ inp.focus({preventScroll:true}); }, reduce?0:420);
 }
-['ctaUpload','fabCta'].forEach(function(id){
+['ctaUpload','fabCta','introAsk','barAsk'].forEach(function(id){
   var el=document.getElementById(id);
   if(el) el.addEventListener('click',toDesk);
 });

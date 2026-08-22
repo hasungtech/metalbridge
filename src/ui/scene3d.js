@@ -201,5 +201,10 @@ export function initScene(){
   new IntersectionObserver(function(es){ es.forEach(function(e){ vis = e.isIntersecting; }); },
     { threshold:0 }).observe(cv);
 
+  /* 화면 밖이면 루프가 쉬므로 라벨 좌표가 낡습니다. 크기가 바뀌면 한 프레임만 다시 그립니다. */
+  window.addEventListener('resize', function(){
+    const was = vis; vis = true; frame(performance.now()); vis = was;
+  });
+
   requestAnimationFrame(frame);
 }
