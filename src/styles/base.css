@@ -55,7 +55,9 @@ input,textarea,select{font-family:inherit}
 .deskbar-cta{flex:none;margin-left:var(--md)}
 
 /* ── 화면 0 — 브랜드 소개 ── */
-.intro{border-bottom:1px solid var(--hairline);padding:calc(var(--section) + var(--sm)) 0}
+.intro{border-bottom:1px solid var(--hairline);padding:calc(var(--section) + var(--sm)) 0;
+  min-height:calc(100vh - 64px);display:flex;align-items:center;scroll-margin-top:64px}
+.intro>.wrap{width:100%}
 .intro-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:calc(var(--section) + var(--sm));
   align-items:center}
 .intro-grid>*{min-width:0}
@@ -319,7 +321,7 @@ footer{padding:var(--xl) 0;border-bottom:0}
   .deskbar-state{display:none}
   .deskbar-cta{margin-left:auto}
   .logo{font-size:15px}
-  .intro{padding:var(--xl) 0}
+  .intro{padding:var(--xl) 0;min-height:0;display:block}
   .intro-copy{gap:var(--md)}
   .intro-lead{font-size:15px}
   .intro-cta .btn{flex:1;min-width:140px}
