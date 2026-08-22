@@ -5,19 +5,29 @@
  */
 import { reduce } from '../state.js';
 import { feature, mesh } from 'topojson-client';
+import { SUPPLIER_MASTER } from '../engine/suppliers.js';
 
-/* 권역 — README v4. 배치는 matchSuppliers() 의 1차/2차 기준입니다. */
+/* 나라 단위입니다. 도시 이름은 쓰지 않습니다 — 발송은 국가 단위로 나갑니다.
+   lat/lon 은 지구본에 점을 찍을 좌표일 뿐이고 화면에 도시명으로 드러나지 않습니다.
+   배치는 matchSuppliers() 의 1차/2차 기준입니다. */
 export const ZONES = [
-  { key:'kr', en:'BUSAN',    ko:'부산 · 한국',   lat:35.18, lon:129.08,
+  { key:'kr', en:'KOREA', ko:'한국', lat:35.18, lon:129.08,
     good:'국내 유통 재고 · 소량 대응',   batch:'1차', meta:'최단 납기 · 검수 직접 수행', dir:'up-left' },
-  { key:'cn', en:'SHANGHAI', ko:'상하이 · 중국', lat:31.23, lon:121.47,
+  { key:'cn', en:'CHINA', ko:'중국', lat:31.23, lon:121.47,
     good:'대량 압연재 · 단가 비교',      batch:'1차', meta:'대형 밀 · 성적서 검증 필요', dir:'down-left' },
-  { key:'jp', en:'OSAKA',    ko:'오사카 · 일본', lat:34.69, lon:135.50,
+  { key:'jp', en:'JAPAN', ko:'일본', lat:34.69, lon:135.50,
     good:'특수강 · 규격 재확인',         batch:'1차', meta:'품질 안정 · 소량 대응', dir:'right' },
-  { key:'in', en:'MUMBAI',   ko:'뭄바이 · 인도', lat:19.08, lon:72.88,
+  { key:'in', en:'INDIA', ko:'인도', lat:19.08, lon:72.88,
     good:'피팅 · 플랜지 가공품',         batch:'2차', meta:'대량 물량 · 대체 강종 제안', dir:'right' },
 ];
 const HUB = ZONES[0];
+
+/* 나라별 후보 공급처 수 — 마스터에서 세어 씁니다.
+   숫자를 이 파일에 적어두면 SUPPLIER_MASTER 를 갈아끼울 때 어긋납니다.
+   거래처가 아니라 후보입니다 (CLAUDE.md 문구 규칙). */
+export function supplierCount(ko){
+  return SUPPLIER_MASTER.filter(function(sp){ return sp.c === ko; }).length;
+}
 
 const D2R = Math.PI / 180;
 const unit = (lat, lon) => {
@@ -163,7 +173,7 @@ export function initScene(){
   /* 라벨 오버레이 — 노드마다 방향이 달라야 부산·오사카가 겹치지 않습니다 */
   if(labelBox){
     labelBox.innerHTML = ZONES.map(z =>
-      '<span class="glabel dir-'+z.dir+'"><b>'+z.en+'</b><i>'+z.ko.split(' · ')[1]+'</i></span>').join('');
+      '<span class="glabel dir-'+z.dir+'"><b>'+z.en+'</b><i>후보 '+supplierCount(z.ko)+'</i></span>').join('');
   }
 
   /* 권역 목록 + 호버 연동 */
@@ -174,7 +184,8 @@ export function initScene(){
         '<div class="zone-top"><i class="'+(z.batch==='1차'?'on':'')+'"></i>'+
           '<span class="zone-en">'+z.en+'</span>'+
           '<span class="zone-batch mono">'+(z.batch==='1차'?'1차 발송':'2차 대기')+'</span></div>'+
-        '<b class="zone-ko">'+z.ko+'</b>'+
+        '<div class="zone-name"><b class="zone-ko">'+z.ko+'</b>'+
+          '<span class="zone-n mono">후보 공급처 <b>'+supplierCount(z.ko)+'</b>곳</span></div>'+
         '<p class="zone-good">'+z.good+'</p>'+
         '<p class="zone-meta mono">'+z.meta+'</p>'+
       '</div>').join('');

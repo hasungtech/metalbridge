@@ -211,6 +211,8 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .sec-head{margin-bottom:var(--xl)}
 .sec-head>div{display:flex;flex-direction:column;gap:var(--md)}
 .flow-lead{max-width:900px}
+.flow-note{display:block;margin-top:6px;font-size:12px;color:var(--stone);word-break:keep-all}
+.flow-note b{color:var(--mute);font-weight:700}
 .flow-grid{display:grid;grid-template-columns:1fr 420px;gap:var(--section);align-items:start}
 .flow-grid>*{min-width:0}
 .globe-stage{position:relative;background:var(--cloud);border:1px solid var(--hairline);
@@ -220,7 +222,8 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .globe-labels{position:absolute;inset:0;pointer-events:none}
 .glabel{position:absolute;display:none;white-space:nowrap}
 .glabel b{font-family:'Anton',sans-serif;font-size:12px;letter-spacing:.1em;display:block}
-.glabel i{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mute);font-style:normal}
+.glabel i{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mute);font-style:normal;
+  display:block;margin-top:1px}
 .glabel.dir-up-left{transform:translate(-100%,-100%);padding:0 10px 8px 0;text-align:right}
 .glabel.dir-down-left{transform:translate(-100%,0);padding:8px 10px 0 0;text-align:right}
 .glabel.dir-right{transform:translate(0,-50%);padding-left:12px}
@@ -238,7 +241,10 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .zone-top i.on{background:var(--success)}
 .zone-en{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.14em;color:var(--mute)}
 .zone-batch{margin-left:auto;font-size:11px;color:var(--mute);letter-spacing:.04em}
+.zone-name{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sm)}
 .zone-ko{font-size:20px;font-weight:700}
+.zone-n{font-size:11px;color:var(--stone);letter-spacing:.03em;white-space:nowrap}
+.zone-n b{font-size:17px;font-weight:700;color:var(--ink);margin:0 1px 0 4px}
 .zone-good{margin:0;font-size:14px;color:var(--mute)}
 .zone-meta{margin:2px 0 0;font-size:11px;color:var(--stone);letter-spacing:.03em}
 .flow-notes{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--xl);margin-top:var(--xl);
