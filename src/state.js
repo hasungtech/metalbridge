@@ -12,6 +12,7 @@ export const S = {
   SENT: false,
   MODE: 'free',   // free | qa | extra | done
   qQueue: [], qPos: 0, finished: false,
+  filter: 'all',  // 판독 레일 상태 필터 (all | 확정 | 조건부 | 불가)
 };
 export const MB_MAIL = 'quote@metalbridge.ai';
 export const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

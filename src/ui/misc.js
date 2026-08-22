@@ -1,25 +1,55 @@
-/** 공급처 현황 표시 · 소재 상담 · 떠 있는 상담창 · FAQ · 내부 링크 */
+/** 떠 있는 소재 상담창 · 내부 링크 스크롤 · 히어로 상태 파생 */
 import { S, reduce } from '../state.js';
-export function initMisc(){
-/* ══════════ 견적 요청 발송 현황 ══════════ */
-var SUPPLIERS=[
- ['한국','포항 특수강 대리점','국내 재고 · 최단 납기','reply','회신 4.2톤 가능'],
- ['한국','부산 스테인리스 유통','잉여 재고 보유 확인','reply','회신 2.8톤 부분'],
- ['한국','창원 가공 유통','재단 가능 · 소량 대응','send','발송 후 6시간'],
- ['중국','장쑤성 STS 밀','대형 밀 · 단가 경쟁력','reply','회신 · 성적서 확인 중'],
- ['중국','상하이 무역상','재고 판재 다품종','send','발송 후 3시간'],
- ['중국','광둥 가공 유통','판재 재단 병행','send','발송 후 3시간'],
- ['일본','오사카 특수강 상사','소량 대응 · 품질 안정','reply','회신 · 납기 6주'],
- ['일본','도쿄 합금 상사','니켈합금 전문','send','발송 후 2시간'],
- ['인도','뭄바이 STS 밀','대량 물량 · 대체 강종 제안','send','발송 후 2시간'],
- ['인도','첸나이 유통','판재 위주 · 선적 주 1회','send','발송 후 2시간']
-];
-document.getElementById('boList').innerHTML=SUPPLIERS.map(function(s){
-  var st = s[3]==='reply' ? '<span class="state reply">회신</span>' : '<span class="state send">발송</span>';
-  return '<div class="bo-row"><div><div class="n"><span class="flag" style="margin-right:8px">'+s[0]+'</span>'+s[1]+'</div>'+
-         '<div class="s">'+s[2]+' · '+s[4]+'</div></div>'+st+'</div>';
-}).join('');
 
+/**
+ * 히어로 업로드 영역의 5개 상태를 S 에서 파생합니다.
+ * S 에 화면 전용 필드를 추가하지 않고 기존 값만 읽습니다.
+ *   force: 'drag' | 'reading' — 순간 상태는 호출부가 알려줍니다.
+ */
+export function syncHero(force){
+  var drop=document.getElementById('drop');
+  if(!drop) return;
+  var glyph=drop.querySelector('.up-glyph');
+  var title=document.getElementById('upTitle');
+  var sub=document.getElementById('upSub');
+  var bar=document.getElementById('upState');
+  var deskNo=document.getElementById('deskNo');
+  var deskSend=document.getElementById('deskSend');
+  var deskState=document.getElementById('deskState');
+  var files=S.picked.length, items=S.ITEMS.length, no=S.ANS.__no||'';
+  var miss=S.ITEMS.filter(function(i){return i.state==='불가';}).length;
+  var st;
+  if(force==='drag'){
+    st={c:'hot',g:'\u2193',t:'놓으면 바로 판독합니다',s:'파일을 놓으십시오',bar:'드롭 대기',dot:'busy'};
+  } else if(force==='reading'){
+    st={c:'reading',g:'\u25D0',t:'자료를 읽고 있습니다',s:'파일 '+files+'건 업로드 완료',bar:'판독',dot:'busy'};
+  } else if(S.SENT||S.MODE==='done'){
+    st={c:'done',g:'\u2713',t:'요청서가 준비되었습니다',s:'품목 '+items+'건',bar:'1차 발송 완료',dot:'live'};
+  } else if((S.MODE==='qa'||S.MODE==='extra')&&S.qQueue&&S.qQueue.length){
+    var n=Math.min(S.qPos+1,S.qQueue.length);
+    st={c:'done',g:'\u2713',t:'확인 문답 '+n+' / '+S.qQueue.length,s:'답하시면 오른쪽 표가 바로 갱신됩니다',
+        bar:'문답 진행',dot:'busy'};
+  } else if(items){
+    st={c:'done',g:'\u2713',t:'판독을 마쳤습니다',s:'파일 '+files+'건',
+        bar:miss?('확인 필요 '+miss+'건'):'판독 완료',dot:miss?'busy':'live'};
+  } else {
+    st={c:'',g:'+',t:'여기에 도면·BOM을 놓으십시오',s:'클릭해서 선택 · 여러 개 가능',bar:'대기',dot:''};
+  }
+  drop.classList.remove('hot','reading','done');
+  if(st.c) drop.classList.add(st.c);
+  if(glyph) glyph.textContent=st.g;
+  if(title) title.textContent=st.t;
+  if(sub) sub.textContent=st.s;
+  if(bar) bar.textContent=st.bar;
+  if(deskNo) deskNo.textContent = no ? ('접수번호 '+no) : '접수번호 미발급';
+  if(deskState){ deskState.classList.remove('live','busy'); if(st.dot) deskState.classList.add(st.dot); }
+  if(deskSend){
+    var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;
+    deskSend.textContent = items ? ('확정 '+ok+'건 발송 대상') : '';
+  }
+}
+
+export function initMisc(){
 /* ══════════ 소재 상담 ══════════ */
 var KB=[
  {k:['316','316l','304'],a:'316L은 316의 탄소 함량을 0.03% 이하로 낮춘 강종입니다. 용접을 하면 탄소가 크롬과 결합해 결정 경계에서 내식성이 떨어지는데(입계부식), L 등급은 이를 막습니다.<br><br>용접 부위가 있고 부식 환경이면 316L, 용접이 없거나 상온 일반 환경이면 316으로 충분합니다. 304 대비 316은 몰리브덴이 들어가 염분·산성 환경에 강합니다.'},
@@ -32,46 +62,8 @@ var KB=[
  {k:['대체','대신','바꿔'],a:'대체 가능 여부는 용도가 결정합니다. 구조용은 항복강도, 부식 환경은 성분, 금형은 경도가 기준입니다.<br><br>사양서에 용도와 사용 환경을 적어주시면 대체 가능한 강종을 함께 찾아 견적받겠습니다. 판단이 어려우면 원 강종과 대체안 두 가지를 동시에 요청해 비교해 드립니다.'}
 ];
 var FALLBACK='그 부분은 사양과 용도를 조금 더 알아야 정확히 답할 수 있습니다. 강종·형상·사용 환경을 알려주시거나, 가지고 계신 자료를 위쪽에서 올려주시면 담당자가 확인해 회신하겠습니다.';
-var chatlog=document.getElementById('chatlog');
-function chatPush(cls,who,html){
-  var d=document.createElement('div');
-  d.className='msg '+cls;
-  d.innerHTML='<div class="who">'+who+'</div>'+html;
-  chatlog.appendChild(d);
-  chatlog.scrollTop=chatlog.scrollHeight;
-}
-function answer(q){
-  var s=q.toLowerCase();
-  if(/얼마|가격|단가|시세|price/.test(s))
-    return '단가는 실제 공급처에서 받아 그대로 전해 드립니다. 같은 강종도 원산지·수량·납기·성적서 조건에 따라 크게 달라지기 때문입니다.<br><br>사양을 올려주시면 한국·중국·일본·인도에 동시에 요청해 비교표로 정리해 드리겠습니다.';
-  for(var i=0;i<KB.length;i++){
-    for(var j=0;j<KB[i].k.length;j++){
-      if(s.indexOf(KB[i].k[j])>=0) return KB[i].a;
-    }
-  }
-  return FALLBACK;
-}
-function ask(q){
-  if(!q.trim()) return;
-  chatPush('me','고객사',q);
-  setTimeout(function(){ chatPush('sys','METAL BRIDGE AI',answer(q)); },380);
-}
-document.getElementById('chatSend').addEventListener('click',function(){
-  var el=document.getElementById('chatInput'); ask(el.value); el.value='';
-});
-document.getElementById('chatInput').addEventListener('keydown',function(e){
-  if(e.key==='Enter'){ ask(this.value); this.value=''; }
-});
 var SUGGEST=['316과 316L 차이가 뭡니까','SKD11 경도는 얼마로 잡습니까','인코넬 600 대신 625 써야 합니까',
              '밀시트가 뭡니까','티타늄 Gr.2와 Gr.5 차이','SCM440 조질재와 생재'];
-var chipsEl=document.getElementById('chips');
-SUGGEST.forEach(function(q){
-  var b=document.createElement('button');
-  b.className='chip'; b.type='button'; b.textContent=q;
-  b.addEventListener('click',function(){ ask(q); });
-  chipsEl.appendChild(b);
-});
-chatPush('sys','METAL BRIDGE AI','소재에 관해 궁금하신 점을 편하게 물어보십시오. 강종 차이, 대체 가능 여부, 규격·성적서 용어를 답해 드립니다.<br><br>확인이 끝나면 그대로 <b>견적 요청으로 이어가실 수 있습니다.</b>');
 
 /* ══════════ 떠 있는 소재 AI 창 ══════════ */
 var aiwin=document.getElementById('aiwin'), fab=document.getElementById('fab'),
@@ -113,19 +105,17 @@ SUGGEST.forEach(function(q){
   b.addEventListener('click',function(){ fabAsk(q); });
   fabChips.appendChild(b);
 });
-// 섹션 내 상담창이 화면에 보이면 떠 있는 버튼은 숨김
-var hideZones=[document.getElementById('ai'), document.getElementById('ask')];
-var hiddenBy={};
-var fabIO=new IntersectionObserver(function(es){
-  es.forEach(function(e){ hiddenBy[e.target.id]=e.isIntersecting; });
-  if(aiwin.classList.contains('open')) return;
-  var any=Object.keys(hiddenBy).some(function(k){ return hiddenBy[k]; });
-  fab.classList.toggle('hide', any);
-},{threshold:.2});
-hideZones.forEach(function(el){ if(el) fabIO.observe(el); });
-
-document.getElementById('navAsk').addEventListener('click',openWin);
-document.getElementById('ctaAsk').addEventListener('click',openWin);
+/* ══════════ 히어로 업로드 영역으로 보내기 ══════════ */
+function toDesk(){
+  var d=document.getElementById('desk');
+  if(d) d.scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'});
+  var inp=document.getElementById('askIn');
+  if(inp) setTimeout(function(){ inp.focus(); }, reduce?0:420);
+}
+['ctaUpload','fabCta'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el) el.addEventListener('click',toDesk);
+});
 
 /* ══════════ 내부 링크는 페이지 이동 없이 스크롤 ══════════ */
 document.addEventListener('click',function(e){

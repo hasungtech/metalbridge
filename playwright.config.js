@@ -1,9 +1,17 @@
 import { defineConfig } from '@playwright/test';
 
+/* 브라우저 경로를 환경변수로 넘길 수 있게 해둡니다.
+   설치된 Chromium 빌드가 Playwright 가 기대하는 것과 다른 환경(컨테이너 등)에서
+   PW_CHROMIUM_PATH=/path/to/chrome npm test 로 실행할 수 있습니다. */
+const exe = process.env.PW_CHROMIUM_PATH;
+
 export default defineConfig({
   testDir: './tests',
   timeout: 60000,
-  use: { baseURL: 'http://localhost:5173' },
+  use: {
+    baseURL: 'http://localhost:5173',
+    ...(exe ? { launchOptions: { executablePath: exe } } : {}),
+  },
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:5173',

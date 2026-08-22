@@ -9,7 +9,6 @@ export default defineConfig({
         manualChunks: {
           xlsx: ['xlsx'],
           pdf: ['pdfjs-dist/legacy/build/pdf'],
-          three: ['three'],
         },
       },
     },

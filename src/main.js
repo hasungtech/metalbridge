@@ -3,7 +3,7 @@ import './styles/base.css';
 import { initReveal } from './ui/reveal.js';
 import { initScene } from './ui/scene3d.js';
 import { initChat }  from './ui/chat.js';
-import { initMisc }  from './ui/misc.js';
+import { initMisc, syncHero } from './ui/misc.js';
 import { renderSpec } from './ui/spec-table.js';
 
 /**
@@ -15,4 +15,5 @@ initReveal();
 renderSpec();
 initChat();
 initMisc();
+syncHero();
 try { initScene(); } catch (e) { console.warn('3D 비활성화:', e.message); }
