@@ -54,14 +54,14 @@ input,textarea,select{font-family:inherit}
 .deskbar-send:empty{display:none}
 .deskbar-cta{flex:none;margin-left:var(--md)}
 
-/* ── 화면 0 — 브랜드 소개 ── */
-.intro{border-bottom:1px solid var(--hairline);padding:calc(var(--section) + var(--sm)) 0;
+/* ── 화면 0 — 브랜드 소개 ──
+   지구본이 오른쪽으로 잘려 나가고 문구는 왼쪽에 놓입니다. 지구본은 .wrap 밖의
+   절대 배치라 화면 폭 전체를 쓰고, overflow:hidden 이 잘라냅니다. */
+.intro{position:relative;overflow:hidden;border-bottom:1px solid var(--hairline);
+  padding:calc(var(--section) + var(--sm)) 0;
   min-height:calc(100vh - 64px);display:flex;align-items:center;scroll-margin-top:64px}
-.intro>.wrap{width:100%}
-.intro-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:calc(var(--section) + var(--sm));
-  align-items:center}
-.intro-grid>*{min-width:0}
-.intro-copy{display:flex;flex-direction:column;gap:var(--lg)}
+.intro>.wrap{width:100%;position:relative;z-index:1}
+.intro-copy{display:flex;flex-direction:column;gap:var(--lg);max-width:560px}
 .intro .eyebrow{margin:0}
 .intro-h{font-size:clamp(30px,3.9vw,50px);font-weight:700;line-height:1.16;letter-spacing:-.035em;
   margin:0;word-break:keep-all}
@@ -74,16 +74,11 @@ input,textarea,select{font-family:inherit}
 .intro-facts dt{font-size:11px;color:var(--mute);letter-spacing:.06em;flex:0 0 40px}
 .intro-facts dd{margin:0;font-size:13px;color:var(--mute);word-break:keep-all}
 
-.intro-work{border:1px solid var(--hairline)}
-.intro-work-h{margin:0;padding:14px 20px;border-bottom:1px solid var(--hairline);
-  font-size:11px;letter-spacing:.1em;color:var(--mute)}
-.intro-steps{list-style:none;margin:0;padding:0}
-.intro-steps li{display:grid;grid-template-columns:28px 104px 1fr;gap:var(--md);align-items:baseline;
-  padding:16px 20px;border-bottom:1px solid var(--hairline)}
-.intro-steps li:last-child{border-bottom:0}
+/* 대신하는 일 — 표를 접어 한 줄로 */
+.intro-steps{list-style:none;display:flex;flex-wrap:wrap;gap:var(--md) var(--xl);
+  margin:0;padding:var(--md) 0 0;border-top:1px solid var(--hairline)}
+.intro-steps li{display:flex;align-items:baseline;gap:var(--sm);font-size:14px;white-space:nowrap}
 .intro-steps .n{font-size:11px;color:var(--stone);letter-spacing:.06em}
-.intro-steps b{font-size:15px;font-weight:700;white-space:nowrap}
-.intro-steps .d{font-size:13px;color:var(--mute);line-height:1.5;word-break:keep-all}
 
 /* ── 화면 1 — 전체화면 문의창 ── */
 .desk{height:calc(100vh - 64px);min-height:600px;border-bottom:1px solid var(--hairline);
@@ -213,11 +208,8 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .flow-lead{max-width:900px}
 .flow-note{display:block;margin-top:6px;font-size:12px;color:var(--stone);word-break:keep-all}
 .flow-note b{color:var(--mute);font-weight:700}
-.flow-grid{display:grid;grid-template-columns:1fr 420px;gap:var(--section);align-items:start}
-.flow-grid>*{min-width:0}
-.globe-stage{position:relative;background:var(--cloud);border:1px solid var(--hairline);
-  aspect-ratio:1/1;max-height:660px;overflow:hidden}
-#globeCanvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+.globe-stage{position:absolute;inset:0;z-index:0;pointer-events:none}
+#globeCanvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab;pointer-events:auto}
 #globeCanvas:active{cursor:grabbing}
 .globe-labels{position:absolute;inset:0;pointer-events:none}
 .glabel{position:absolute;display:none;white-space:nowrap}
@@ -227,26 +219,22 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .glabel.dir-up-left{transform:translate(-100%,-100%);padding:0 10px 8px 0;text-align:right}
 .glabel.dir-down-left{transform:translate(-100%,0);padding:8px 10px 0 0;text-align:right}
 .glabel.dir-right{transform:translate(0,-50%);padding-left:12px}
-.globe-meta,.globe-cap{position:absolute;font-size:10px;letter-spacing:.08em;color:var(--mute);pointer-events:none}
-.globe-meta{left:16px;bottom:14px}
-.globe-cap{right:16px;top:14px}
+.globe-cap{position:absolute;right:24px;top:18px;font-size:10px;letter-spacing:.08em;
+  color:var(--stone);pointer-events:none}
 
-.zones{border:1px solid var(--hairline)}
-.zone{padding:18px 20px;border-bottom:1px solid var(--hairline);
-  display:flex;flex-direction:column;gap:4px;transition:background .16s ease-out}
-.zone:last-child{border-bottom:0}
-.zone:hover{background:var(--cloud)}
-.zone-top{display:flex;align-items:center;gap:var(--sm)}
-.zone-top i{width:8px;height:8px;border-radius:50%;background:var(--stone);flex:none}
-.zone-top i.on{background:var(--success)}
-.zone-en{font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.14em;color:var(--mute)}
-.zone-batch{margin-left:auto;font-size:11px;color:var(--mute);letter-spacing:.04em}
-.zone-name{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sm)}
-.zone-ko{font-size:20px;font-weight:700}
-.zone-n{font-size:11px;color:var(--stone);letter-spacing:.03em;white-space:nowrap}
-.zone-n b{font-size:17px;font-weight:700;color:var(--ink);margin:0 1px 0 4px}
-.zone-good{margin:0;font-size:14px;color:var(--mute)}
-.zone-meta{margin:2px 0 0;font-size:11px;color:var(--stone);letter-spacing:.03em}
+.zones{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--hairline)}
+.zone{padding:var(--lg);border-right:1px solid var(--hairline);min-width:0}
+.zone:last-child{border-right:0}
+.zone-en{display:block;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.14em;color:var(--mute)}
+.zone-ko{display:block;font-size:22px;font-weight:700;margin:4px 0 var(--md)}
+.zone-n{margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--mute)}
+.zone-n span{font-size:38px;line-height:1;letter-spacing:-.02em;color:var(--ink);margin-right:3px}
+.zone-good{margin:var(--md) 0 0;font-size:14px;color:var(--mute);word-break:keep-all}
+.zone-meta{margin:2px 0 0;font-size:11px;color:var(--stone);letter-spacing:.03em;word-break:keep-all}
+.zone-batch{display:flex;align-items:center;gap:var(--xs);margin:var(--md) 0 0;
+  font-size:11px;color:var(--mute);letter-spacing:.04em}
+.zone-batch i{width:7px;height:7px;border-radius:50%;background:var(--stone);flex:none}
+.zone-batch i.on{background:var(--success)}
 .flow-notes{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--xl);margin-top:var(--xl);
   border-top:1px solid var(--hairline);padding-top:var(--lg)}
 .flow-notes>div{display:flex;gap:var(--md);align-items:baseline}
@@ -314,14 +302,14 @@ footer{padding:var(--xl) 0;border-bottom:0}
 /* ── 반응형 ── */
 @media(max-width:1180px){
   .desk-body{grid-template-columns:1fr 460px}
-  .flow-grid{grid-template-columns:1fr 360px;gap:var(--xl)}
 }
 @media(max-width:1024px){
-  .intro-grid{grid-template-columns:1fr;gap:var(--xl)}
   .desk{height:auto;min-height:0}
   .desk-body{grid-template-columns:1fr}
   .rail{border-left:0;border-top:1px solid var(--hairline);max-height:520px}
-  .flow-grid{grid-template-columns:1fr;gap:var(--xl)}
+  .zones{grid-template-columns:repeat(2,1fr)}
+  .zone:nth-child(2){border-right:0}
+  .zone:nth-child(-n+2){border-bottom:1px solid var(--hairline)}
   .principles{grid-template-columns:1fr}
   .flow-notes{grid-template-columns:1fr;gap:var(--md)}
   .h-xl{font-size:30px}
@@ -335,14 +323,24 @@ footer{padding:var(--xl) 0;border-bottom:0}
   .deskbar-state{display:none}
   .deskbar-cta{margin-left:auto}
   .logo{font-size:15px}
-  .intro{padding:var(--xl) 0;min-height:0;display:block}
-  .intro-copy{gap:var(--md)}
+  /* 세로 화면에서는 지구본을 문구 뒤에 깔면 글이 안 읽힙니다.
+     흐름에서 빼내 문구 아래 정사각형 한 장으로 세웁니다 —
+     문의하기 버튼은 그 위에 남습니다. */
+  .intro{padding:var(--xl) 0;min-height:0;display:flex;flex-direction:column;gap:var(--lg)}
+  .intro>.wrap{order:1}
+  .globe-stage{order:2;position:relative;inset:auto;width:100%;
+    height:min(80vw,320px);pointer-events:auto}
+  .globe-cap{right:20px;top:0}
+  .intro-copy{gap:var(--md);max-width:none}
   .intro-lead{font-size:15px}
   .intro-cta .btn{flex:1;min-width:140px}
-  .intro-steps li{grid-template-columns:24px 1fr;row-gap:2px;padding:12px 16px}
-  .intro-steps b{grid-column:2}
-  .intro-steps .d{grid-column:2}
-  .intro-work-h{padding:12px 16px}
+  .intro-steps{gap:var(--sm) var(--lg)}
+  .intro-steps li{font-size:13px}
+  .zones{grid-template-columns:1fr}
+  .zone{border-right:0;border-bottom:1px solid var(--hairline);padding:var(--md) 20px}
+  .zone:last-child{border-bottom:0}
+  .zone-ko{margin:2px 0 var(--sm);font-size:19px}
+  .zone-n span{font-size:30px}
   .desk{scroll-margin-top:52px}
   #flow,#about{scroll-margin-top:52px}
   .desk-main{padding:14px 0}
