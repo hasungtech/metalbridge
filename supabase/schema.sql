@@ -159,3 +159,9 @@ select
   (select count(*) from public.rfq_suppliers s where s.rfq_id = r.id and s.replied_at is not null) as replied_count
 from public.rfq r
 order by r.created_at desc;
+
+-- 뷰는 기본적으로 소유자 권한으로 하위 테이블을 읽어 RLS 를 우회합니다.
+-- 호출자 권한으로 돌리고 익명 권한을 회수합니다.
+alter view public.rfq_board set (security_invoker = on);
+revoke all on public.rfq_board from anon;
+grant select on public.rfq_board to authenticated;

@@ -127,3 +127,26 @@ create policy "anon upload rfq files"
 -- ── 4. 확인
 --   select * from pg_policies where schemaname in ('public','storage');
 --   select id, public, file_size_limit from storage.buckets where id='rfq-files';
+
+-- ── 5. rfq_board 뷰 — RLS 우회 차단
+--
+--  Postgres 뷰는 기본적으로 "뷰 소유자" 권한으로 하위 테이블을 읽습니다.
+--  그래서 rfq 에 익명 select 정책이 없어도, 뷰를 통하면 전체가 보일 수 있습니다.
+--  (Supabase 린터의 security_definer_view 경고)
+--
+--  두 겹으로 막습니다: 호출자 권한으로 실행 + 익명 권한 회수.
+alter view public.rfq_board set (security_invoker = on);
+
+revoke all on public.rfq_board from anon;
+grant select on public.rfq_board to authenticated;
+
+-- 테이블 자체도 익명 select 권한이 남아 있지 않은지 확인합니다.
+revoke select on public.rfq, public.rfq_items, public.rfq_answers,
+                 public.rfq_suppliers, public.rfq_files, public.suppliers from anon;
+grant  insert on public.rfq, public.rfq_items, public.rfq_answers,
+                 public.rfq_suppliers, public.rfq_files to anon;
+
+-- ── 6. 확인
+--   select table_name, privilege_type from information_schema.role_table_grants
+--    where grantee='anon' and table_schema='public';
+--   -- INSERT 만 남아야 합니다. SELECT 가 보이면 위 revoke 를 다시 실행하십시오.
