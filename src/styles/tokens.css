@@ -1,0 +1,10 @@
+/* 디자인 토큰 — Design과 Code가 공유하는 단일 출처.
+   Design에서 값이 바뀌면 이 파일만 수정하십시오. */
+:root{
+  --ink:#0e0e10; --ink2:#17171a; --canvas:#ffffff; --cloud:#f5f5f5; --cloud2:#ebebec;
+  --hairline:#cacacb; --hairline-soft:#e5e5e5; --charcoal:#39393b; --mute:#707072; --stone:#9e9ea0;
+  --molten:#0f62fe; --blue-hi:#4589ff; --blue-lo:#78a9ff; --blue-tint:#edf5ff; --blue-deep:#002d9c;
+  --amber:#f5a623; --success:#198038; --info:#0f62fe;
+  --xs:4px; --sm:8px; --md:12px; --lg:18px; --xl:24px; --xxl:30px; --section:48px;
+  --pill:30px; --max:1440px;
+}
