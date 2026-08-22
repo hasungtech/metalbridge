@@ -39,6 +39,7 @@ input,textarea,select{font-family:inherit}
 .deskbar-in{max-width:var(--max);margin:0 auto;height:100%;padding:0 var(--xl);
   display:flex;align-items:center;gap:var(--lg)}
 .deskbar-no{font-size:11px;color:var(--stone);letter-spacing:.06em}
+.deskbar-no:empty{display:none}
 .deskbar-state{margin-left:auto;display:flex;align-items:center;gap:var(--sm);
   font-size:13px;color:var(--mute)}
 .deskbar-state i{width:8px;height:8px;border-radius:50%;background:var(--stone);flex:none}
@@ -49,9 +50,36 @@ input,textarea,select{font-family:inherit}
 @keyframes pulse{50%{opacity:.3}}
 .deskbar-send{font-size:11px;color:var(--mute);letter-spacing:.06em}
 .deskbar-send:empty{display:none}
+.deskbar-cta{flex:none;margin-left:var(--md)}
+
+/* ── 화면 0 — 브랜드 소개 ── */
+.intro{border-bottom:1px solid var(--hairline);
+  padding:calc(var(--section) + var(--xl)) 0 calc(var(--section) + var(--sm))}
+.intro .eyebrow{margin-bottom:var(--lg)}
+.intro-h{font-size:clamp(34px,5.2vw,64px);font-weight:700;line-height:1.1;letter-spacing:-.035em;
+  margin:0;max-width:20ch;word-break:keep-all}
+.intro-lead{font-size:18px;color:var(--mute);line-height:1.7;margin:var(--xl) 0 0;
+  max-width:62ch;word-break:keep-all}
+.intro-lead b{color:var(--charcoal);font-weight:700}
+.intro-cta{display:flex;align-items:center;gap:var(--md);flex-wrap:wrap;margin-top:var(--xl)}
+.intro-go{padding:16px 34px;font-size:16px}
+.intro-note{font-size:12px;color:var(--mute)}
+.intro-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hairline);
+  border:1px solid var(--hairline);margin-top:calc(var(--section) + var(--sm))}
+.intro-steps>div{background:var(--canvas);padding:24px 22px;display:flex;flex-direction:column;gap:10px}
+.intro-steps .n{font-size:11px;color:var(--stone);letter-spacing:.08em}
+.intro-steps b{font-size:17px;font-weight:700}
+.intro-steps p{margin:0;font-size:14px;color:var(--mute);line-height:1.65;word-break:keep-all}
+.intro-facts{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--md) var(--section);
+  margin:var(--xl) 0 0;border-top:1px solid var(--hairline);padding-top:var(--lg)}
+.intro-facts>div{display:flex;gap:var(--md);align-items:baseline}
+.intro-facts dt{font-size:11px;color:var(--mute);letter-spacing:.06em;flex:0 0 72px}
+.intro-facts dd{margin:0;font-size:14px;word-break:keep-all}
 
 /* ── 화면 1 — 전체화면 문의창 ── */
-.desk{height:calc(100vh - 64px);min-height:600px;border-bottom:1px solid var(--hairline);overflow:hidden}
+.desk{height:calc(100vh - 64px);min-height:600px;border-bottom:1px solid var(--hairline);
+  overflow:hidden;scroll-margin-top:64px}
+#flow,#about{scroll-margin-top:64px}
 .desk-body{height:100%;max-width:var(--max);margin:0 auto;
   display:grid;grid-template-columns:1fr 560px}
 .desk-main{display:flex;flex-direction:column;min-height:0;min-width:0;padding:20px 0}
@@ -268,6 +296,8 @@ footer{padding:var(--xl) 0;border-bottom:0}
   .flow-grid{grid-template-columns:1fr 360px;gap:var(--xl)}
 }
 @media(max-width:1024px){
+  .intro-steps{grid-template-columns:1fr}
+  .intro-facts{grid-template-columns:1fr}
   .desk{height:auto;min-height:0}
   .desk-body{grid-template-columns:1fr}
   .rail{border-left:0;border-top:1px solid var(--hairline);max-height:520px}
@@ -282,7 +312,17 @@ footer{padding:var(--xl) 0;border-bottom:0}
   .deskbar{height:52px}
   .deskbar-in{padding:0 20px;gap:var(--md)}
   .deskbar-no{display:none}
+  .deskbar-state{display:none}
+  .deskbar-cta{margin-left:auto}
   .logo{font-size:15px}
+  .intro{padding:var(--xxl) 0}
+  .intro-lead{font-size:15px;margin-top:var(--lg)}
+  .intro-cta{margin-top:var(--lg)}
+  .intro-cta .btn{width:100%}
+  .intro-note{width:100%}
+  .intro-steps{margin-top:var(--xl)}
+  .desk{scroll-margin-top:52px}
+  #flow,#about{scroll-margin-top:52px}
   .desk-main{padding:14px 0}
   .drop{margin:0 20px;padding:20px 18px;gap:14px;flex-wrap:wrap}
   .up-glyph{width:44px;height:44px;font-size:20px}
