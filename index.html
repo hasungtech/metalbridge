@@ -18,356 +18,172 @@
 <body>
 <div class="progress" id="progress"></div>
 
-<div class="utility"><div class="wrap">
-  <div class="l"><i class="dotlive"></i> 특수 소재 견적 중개 · 한국 · 중국 · 일본 · 인도 공급망</div>
-  <div class="r"><a href="#how">이용 안내</a><a href="#faq">FAQ</a><a href="#">로그인</a></div>
-</div></div>
-
 <nav class="nav"><div class="wrap">
-  <div class="logo">METAL BRIDGE<span class="dot">.</span></div>
-  <div class="navlinks">
-    <a href="#top" class="on">견적 문의</a><a href="#who">누가 쓰나</a><a href="#how">작동 방식</a><a href="#rfq">판독 예시</a>
-    <a href="#network">공급망</a><a href="#materials">취급 소재</a>
+  <div class="brand">
+    <span class="logo">METAL BRIDGE<span class="dot">.</span></span>
+    <span class="orgline mono">GRIT CORPORATION</span>
   </div>
-  <button class="btn btn-primary btn-sm" id="navAsk">소재 AI 상담</button>
+  <div class="navlinks">
+    <a href="#spec">판독</a><a href="#network">공급망</a><a href="#close">문의</a>
+  </div>
+  <button class="btn btn-outline btn-sm" id="navAsk" type="button">견적 요청</button>
 </div></nav>
 
+<!-- (1) 히어로 — 업로드가 주인공 -->
 <header class="hero" id="top">
   <canvas id="heroCanvas"></canvas>
-  <div class="hero-veil"></div>
   <div class="wrap">
     <div class="hero-grid">
-      <div class="hero-copy">
-        <p class="eyebrow" style="color:#9e9ea0">특수 소재 견적 플랫폼</p>
-        <h1 class="display">Spec in.<br>Quote out.</h1>
-        <p class="hero-ko">견적 받으실 자료만 보내주시면<br>나머지는 저희가 진행합니다.</p>
-        <p class="hero-sub">도면 PDF, BOM 엑셀, 메신저로 받은 텍스트 어느 쪽이든 괜찮습니다. 사양 정리와 강종 확인을 거쳐
-          한국·중국·일본·인도 공급망에 <b style="color:#fff">같은 조건으로 견적을 요청</b>하고 비교표로 회신드립니다.</p>
-      </div>
 
-      <aside class="askcard" id="ask">
-        <div id="askBody">
-          <div class="hd">
-            <b>견적 문의</b>
-            <span>자료를 올리거나 필요한 소재를 적어주십시오</span>
-          </div>
-          <div class="chatpane" id="askLog">
-            <div class="abub sys"><div class="who">METAL BRIDGE</div>
-              도면 PDF·BOM 엑셀·메신저 텍스트 무엇이든 그대로 보내주십시오.
-              파일이 없으면 필요한 소재를 한 줄로 적어주셔도 됩니다.</div>
-            <div class="drop" id="drop" role="button" tabindex="0" aria-label="파일 선택 또는 끌어다 놓기">
-              <div class="ic">⇪</div>
-              <b>파일을 끌어다 놓으세요</b>
-              <span>클릭하면 파일 선택 · PDF · XLSX · CSV · TXT</span>
+      <div class="hero-copy">
+        <p class="eyebrow">MATERIAL QUOTE BROKERAGE</p>
+        <h1 class="hero-h1">소재 견적, 저희가 대신 받아드립니다</h1>
+        <p class="hero-lead">도면·BOM·메시지를 올리면 사양서로 정리해 견적을 받아 비교표로 돌려드립니다.</p>
+
+        <div class="hero-up">
+          <div class="drop" id="drop" role="button" tabindex="0" aria-label="파일 선택 또는 끌어다 놓기">
+            <div class="up-main">
+              <div class="up-glyph" aria-hidden="true">+</div>
+              <div class="up-text">
+                <b id="upTitle">여기에 도면·BOM을 놓으십시오</b>
+                <span class="mono" id="upState">클릭해서 선택 · 여러 개 가능</span>
+              </div>
+              <span class="btn btn-accent" id="pickBtn">파일 선택</span>
             </div>
           </div>
-          <input type="file" id="fileInput" multiple hidden
-            accept=".pdf,.xlsx,.xls,.csv,.txt,.jpg,.jpeg,.png,.dwg,.dxf,.zip">
-          <div class="askinput">
-            <button class="ic" id="askAttach" type="button" aria-label="파일 첨부">+</button>
-            <input id="askIn" placeholder="예) STS316L 12t 4톤, 9월 셋째 주">
-            <button class="go" id="askSend" type="button">보내기</button>
+          <div class="up-entry">
+            <input id="heroIn" placeholder="파일이 없으면 여기에 적어 주십시오 — 예: STS316L 원형봉 ⌀32 1000L 40본"
+              aria-label="필요한 소재를 직접 입력">
+            <button class="btn btn-outline" id="heroSend" type="button">보내기</button>
           </div>
-          <div class="askchips" id="askChips"></div>
-          <p class="asknote">도면 원본은 공급처에 전달되지 않습니다</p>
+          <input type="file" id="fileInput" multiple hidden
+            accept=".pdf,.xlsx,.xls,.csv,.txt,.jpg,.jpeg,.png,.dwg,.dxf,.step,.stp,.zip">
+          <p class="upnote mono">PDF · DWG · DXF · STEP · XLSX · JPG — 다중 선택 가능</p>
+        </div>
+
+        <div class="donebox" id="doneBox" hidden>
+          <div class="donebox-no">
+            <span class="l mono">접수번호</span>
+            <span class="v mono" id="doneNo">—</span>
+          </div>
+          <div class="donebox-sep"></div>
+          <div class="donebox-state"><i></i><span id="doneState">준비 중</span></div>
+          <div class="donebox-act">
+            <button class="btn btn-outline" id="dlRfq2" type="button">요청서 내려받기</button>
+            <button class="btn btn-accent" id="sendStaff" type="button">담당자에게 보내기</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="hero-spec">
+        <div class="hero-spec-h mono">SPECIFICATION</div>
+        <div class="hero-spec-b">
+          <div class="row"><span class="l mono">취급 소재</span><span class="v">스테인리스 · 인코넬 · 티타늄 · 알루미늄 · 특수강</span></div>
+          <div class="row"><span class="l mono">공급망</span><span class="v">한국 · 중국 · 일본 · 인도</span></div>
+          <div class="row"><span class="l mono">접수 형식</span><span class="v">도면 · BOM · 사진 · 텍스트</span></div>
+          <div class="row"><span class="l mono">확인 절차</span><span class="v">판독 → 문답 → 사양서 확정</span></div>
         </div>
       </aside>
 
-      <div class="hero-facts">
-        <div><div class="l">취급 소재</div><div class="v">스테인리스 · 특수강 · 공구강<br>알루미늄 · 티타늄 · 니켈합금</div></div>
-        <div><div class="l">공급망</div><div class="v">한국 · 중국<br>일본 · 인도</div></div>
-        <div><div class="l">접수 형식</div><div class="v">도면 PDF · BOM 엑셀<br>이미지 · 텍스트</div></div>
-        <div><div class="l">확인 절차</div><div class="v">성분 실측 · 밀시트 대조<br>치수·표면 검수</div></div>
-      </div>
     </div>
   </div>
-  <div class="drag-hint">drag to rotate</div>
 </header>
 
-<!-- 홍보 -->
-<section class="trustbar"><div class="wrap rv">
-  <div class="grid">
-    <div>
-      <p class="eyebrow" style="color:var(--stone)">메탈브릿지가 하는 일</p>
-      <p class="lead">올리기만 하십시오.<br>나머지는 저희가 합니다.</p>
-    </div>
-    <div class="item"><h3>형식 그대로</h3>
-      <p>도면 PDF, BOM 엑셀, 메신저로 받은 텍스트. 정리하지 않고 그대로 올려주시면 표준 사양서로 만들어 드립니다.</p></div>
-    <div class="item"><h3>4개국 동시 견적</h3>
-      <p>같은 사양을 한국·중국·일본·인도 공급망에 동시에 요청해 단가와 납기를 비교표로 정리해 드립니다.</p></div>
-    <div class="item"><h3>소재를 아는 담당자</h3>
-      <p>강종과 규격을 판단할 수 있는 담당자가 직접 붙습니다. 사양이 애매하면 넘겨짚지 않고 먼저 여쭙습니다.</p></div>
-  </div>
-</div></section>
-
-<!-- 이런 분들이 씁니다 -->
-<section id="who" style="padding-bottom:0"><div class="wrap">
-  <div class="sec-head rv"><div>
-    <p class="eyebrow">이런 분들이 씁니다</p>
-    <h2 class="h-xl">쓰시는 이유는 업종마다 다릅니다.</h2>
-  </div></div>
-  <div class="steps rv" style="grid-template-columns:repeat(3,1fr)">
-    <div class="step">
-      <div class="n" style="color:var(--molten);font-size:16px;letter-spacing:.1em">정밀가공사</div>
-      <h4 style="margin-top:14px">12주 걸리던 소재를<br>3일 안에</h4>
-      <p>소량이라 대리점이 잘 받아주지 않고, 수입은 리드타임이 답이 없을 때.
-        국내 잉여 재고와 해외 재고를 함께 뒤집니다.</p>
-    </div>
-    <div class="step">
-      <div class="n" style="color:var(--molten);font-size:16px;letter-spacing:.1em">설비·플랜트 제작사</div>
-      <h4 style="margin-top:14px">성적서까지 붙여<br>4개국 비교 견적</h4>
-      <p>규격과 성적서 요구가 까다로운 프로젝트성 물량. 밀시트 조건을 요청서에 넣어
-        네 나라에 동시에 묻습니다.</p>
-    </div>
-    <div class="step">
-      <div class="n" style="color:var(--molten);font-size:16px;letter-spacing:.1em">금형·공구 제작사</div>
-      <h4 style="margin-top:14px">경도까지 맞춰<br>찾아드립니다</h4>
-      <p>SKD11·SKD61 블록, 열처리 상태와 경도(HRC)까지 확인해야 하는 물건.
-        설명이 통하는 담당자가 붙습니다.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- 프로세스 -->
-<section id="how"><div class="wrap">
-  <div class="sec-head rv"><div>
-    <p class="eyebrow">작동 방식</p>
-    <h2 class="h-xl">업로드에서 견적 회신까지 4단계.</h2>
-  </div></div>
-  <div class="steps rv">
-    <div class="step"><div class="n">01</div><h4>업로드</h4>
-      <p>도면·BOM·PDF·텍스트를 그대로 올립니다. 형식을 맞춰 다시 작성하실 필요가 없습니다.</p></div>
-    <div class="step"><div class="n">02</div><h4>AI 판독</h4>
-      <p>재질·형상·치수·수량·규격을 뽑아 표준 사양서로 정리하고, 빠진 항목을 표시합니다.</p></div>
-    <div class="step"><div class="n">03</div><h4>확인 문답</h4>
-      <p>견적에 반드시 필요한 항목만 실시간으로 여쭙고, 답변을 사양서에 반영합니다.</p></div>
-    <div class="step"><div class="n">04</div><h4>견적 회신</h4>
-      <p>담당자가 4개국 공급처에 요청하고, 회신 단가를 검수 조건·납기와 함께 비교표로 드립니다.</p></div>
-  </div>
-</div></section>
-
-<!-- 업로드 판독 -->
-<section id="rfq"><div class="wrap">
+<!-- (2) 판독 결과 -->
+<section id="spec"><div class="wrap">
   <div class="sec-head rv">
     <div>
-      <p class="step-no">AI 판독</p>
-      <h2 class="h-xl">보내주신 자료를 이렇게 정리해 드립니다.</h2>
-      <p class="cap" style="margin-top:10px;max-width:56ch">샘플을 눌러 판독 과정을 그대로 보실 수 있습니다.
-        위에서 파일을 보내시면 같은 화면이 만들어집니다.</p>
+      <p class="step-no mono">02 / 판독 결과</p>
+      <h2 class="h-xl">올리면 이렇게 됩니다</h2>
     </div>
+    <span class="sec-meta" id="specMeta">—</span>
   </div>
-  <div class="console rv">
-    <div class="panel">
-      <div class="panel-h"><span class="t">샘플 자료</span><span class="t mono" id="upState">대기</span></div>
-      <div class="samples" id="samples"></div>
-      <div class="scan" id="scan"></div>
-      <div class="bar"><i id="scanBar"></i></div>
-    </div>
-    <div class="panel" style="background:#fff;border:1px solid var(--hairline-soft)">
-      <div class="panel-h">
-        <span class="t">판독 결과 — 표준 사양서</span>
-        <span class="t mono" id="specMeta">—</span>
-      </div>
-      <div id="specBody">
-        <div class="empty"><div>
-          <div class="big">NO FILE</div>
-          <p style="margin-top:10px">왼쪽에서 샘플 자료를 선택하면<br>판독 결과가 여기에 표시됩니다.</p>
-        </div></div>
-      </div>
+  <div class="rv">
+    <div id="specBody">
+      <div class="empty"><div>
+        <p>아직 올린 자료가 없습니다. 위에 파일을 놓으면 이 표가 채워집니다.</p>
+      </div></div>
     </div>
   </div>
 </div></section>
 
-<!-- 추가 확인 -->
-<section id="qa" style="padding-top:0"><div class="wrap">
-  <div class="sec-head rv">
-    <div>
-      <p class="step-no">실시간 확인</p>
-      <h2 class="h-xl">빠진 정보는 실시간으로 여쭙습니다.</h2>
-      <p class="cap" style="margin-top:10px;max-width:56ch">견적을 받으려면 반드시 있어야 하는 항목만 묻습니다.
-        답변하시면 사양서가 그 자리에서 채워집니다.</p>
-    </div>
-  </div>
-  <div class="qa rv">
-    <div class="thread" id="thread"></div>
-    <div class="panel">
-      <div class="panel-h"><span class="t">사양 완성도</span><span class="t mono" id="doneState">진행 중</span></div>
-      <div class="donut" id="donut"></div>
-      <div class="rowline" style="border-top:1px solid var(--hairline)"><span>확인 완료</span><span id="qDone">0 / 3</span></div>
-      <div class="rowline"><span>견적 요청 가능</span><span id="qReady">불가</span></div>
-      <div style="margin-top:var(--lg)">
-        <button class="btn btn-primary" style="width:100%" id="sendBtn" disabled>공급망에 견적 요청</button>
-      </div>
-      <p class="cap" style="font-size:12px;margin-top:12px">담당자가 사양을 확인한 뒤 공급망으로 발송합니다.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- 진행 현황 -->
-<section class="bo" id="backoffice"><div class="wrap">
-  <div class="sec-head rv">
-    <div>
-      <p class="step-no">진행 현황</p>
-      <h2 class="h-xl">한 번의 요청이 여러 공급처로 나갑니다.</h2>
-      <p class="cap" style="margin-top:10px;color:var(--mute);max-width:58ch">어느 공급처에 요청했고 어디서 회신이 왔는지,
-        진행 상황을 그대로 공유해 드립니다.</p>
-    </div>
-    <span class="flag mono">예시 화면</span>
-  </div>
-  <div class="bo-grid rv">
-    <div class="bo-card">
-      <div class="panel-h"><span class="t">공급처에 전달되는 요청서</span><span class="t mono">예시</span></div>
-      <div class="kv"><span>요청 구분</span><span>정밀가공 제조사 · 경남</span></div>
-      <div class="kv"><span>품목</span><span>STS316L 판재 t12 × 1524 × 3048</span></div>
-      <div class="kv"><span>수량</span><span>4.2톤 (11매)</span></div>
-      <div class="kv"><span>규격·성적서</span><span>ASTM A240 / 밀시트 필수</span></div>
-      <div class="kv"><span>용도</span><span>화학 설비 탱크 내판 (용접 가공)</span></div>
-      <div class="kv"><span>납기</span><span>9월 셋째 주 · 부산 강서 인도</span></div>
-      <div class="kv"><span>대체 허용</span><span>STS316 (L 아닌 등급) 불가 — 용접 부위 입계부식 우려</span></div>
-      <p class="cap" style="color:var(--stone);font-size:12px;margin-top:var(--lg)">
-        도면 원본과 프로젝트명은 발송 대상에서 제외되며, 발송 전에 요청서를 그대로 확인하실 수 있습니다.</p>
-    </div>
-    <div class="bo-card">
-      <div class="panel-h"><span class="t">견적 요청 발송 현황</span><span class="t mono">예시</span></div>
-      <div id="boList"></div>
-      <p class="cap" style="color:var(--stone);font-size:12px;margin-top:var(--lg)">
-        회신된 단가는 검수 조건·납기와 함께 한 장의 비교표로 정리해 전달해 드립니다.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- 공급망 3D -->
-<section class="globe-sec" id="network"><div class="wrap">
-  <div class="globe-grid">
-    <div class="globe-stage rv"><canvas id="globeCanvas"></canvas></div>
+<!-- (3) 확인 문답 -->
+<section id="qa"><div class="wrap">
+  <div class="qa-grid">
     <div class="rv">
-      <p class="eyebrow" style="color:var(--stone)">공급망</p>
-      <h2 class="h-xl" style="color:#fff">한 건의 요청이<br>네 나라로 동시에 나갑니다.</h2>
-      <p class="cap" style="color:#a9adb1;margin-top:14px;max-width:44ch">국내에서만 찾으면 재고가 없다는 답으로 끝나는 경우가 많습니다.
-        해외 공급망에도 같은 사양을 함께 물어야 가격과 납기를 비교할 수 있습니다.</p>
-      <div class="netlist">
-        <div class="c"><b>한국</b><p>제철소·대리점·잉여 재고 보유 제조사. 최단 납기, 검수 직접 수행.</p></div>
-        <div class="c"><b>중국</b><p>스테인리스·특수강 밀과 가공 유통. 단가 경쟁력, 성적서 검증이 관건.</p></div>
-        <div class="c"><b>일본</b><p>공구강·고합금 상사. 품질 안정성과 소량 대응이 강점.</p></div>
-        <div class="c"><b>인도</b><p>스테인리스 대형 밀. 대량 물량과 대체 강종 제안에 강함.</p></div>
+      <p class="step-no mono">03 / 확인 문답</p>
+      <h2 class="h-xl">대화로 채웁니다</h2>
+      <p class="cap qa-desc">빠진 항목만 묻습니다. 답하면 위 표가 바로 갱신됩니다.
+        규격서가 있으면 대화 중에 그대로 추가하셔도 됩니다.</p>
+    </div>
+    <div class="convo rv">
+      <div class="convo-h mono">CONVERSATION LOG</div>
+      <div class="chatpane" id="askLog">
+        <div class="abub sys"><div class="who">METAL BRIDGE</div>
+          파일을 올리면 판독 과정이 여기에 기록됩니다.</div>
       </div>
-      <div class="hero-cta"><a class="btn btn-accent" href="#rfq">내 자료로 요청해보기</a></div>
+      <div class="askchips" id="askChips"></div>
+      <div class="askinput">
+        <button class="ic" id="askAttach" type="button" aria-label="파일 첨부">+</button>
+        <input id="askIn" placeholder="답변을 입력하십시오">
+        <button class="go" id="askSend" type="button">전송</button>
+      </div>
     </div>
   </div>
 </div></section>
 
-<!-- AI 상담 -->
-<section id="ai"><div class="wrap">
+<!-- (4) 공급망 -->
+<section id="network"><div class="wrap">
   <div class="sec-head rv">
     <div>
-      <p class="step-no">소재 상담</p>
-      <h2 class="h-xl">소재 관련 문의도 받습니다.</h2>
-      <p class="cap" style="margin-top:10px;max-width:58ch">강종 차이, 대체 가능 여부, 성적서 용어.
-        견적을 넣기 전에 확인해야 할 것들을 답해 드립니다.</p>
+      <p class="step-no mono">04 / 공급망</p>
+      <h2 class="h-xl">4개국 공급망에 동시에 물어봅니다</h2>
     </div>
   </div>
-  <div class="ai rv">
-    <div class="chat">
-      <div class="chatlog" id="chatlog"></div>
-      <div class="chatbar">
-        <input id="chatInput" placeholder="예: 316과 316L 중 뭘 써야 합니까" aria-label="소재 질문 입력">
-        <button class="btn btn-primary" id="chatSend">질문</button>
-      </div>
-      <div class="chips" id="chips"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-h"><span class="t">이런 것을 물어보십시오</span></div>
-      <div class="rowline" style="border-top:0"><span>강종 비교 · 대체 가능성</span><span>316 vs 316L</span></div>
-      <div class="rowline"><span>용도별 소재 선택</span><span>고온 · 내식 · 금형</span></div>
-      <div class="rowline"><span>규격 · 성적서 용어</span><span>밀시트 · ASTM</span></div>
-      <div class="rowline"><span>열처리 · 경도 표기</span><span>T6 · QT · HRC</span></div>
-      <div class="rowline"><span>수입 리드타임 감각</span><span>강종별 소요</span></div>
-      <p class="cap" style="font-size:12.5px;margin-top:var(--lg)">
-        상담 내용은 견적 요청서에 함께 첨부되어, 담당자가 같은 맥락에서 이어받습니다.</p>
-    </div>
+  <div class="netgrid rv">
+    <div class="netcell"><span class="en">KOREA</span><b>한국</b><p>국내 유통 재고 · 소량 대응</p></div>
+    <div class="netcell"><span class="en">CHINA</span><b>중국</b><p>대량 압연재 · 단가 비교</p></div>
+    <div class="netcell"><span class="en">JAPAN</span><b>일본</b><p>특수강 · 규격 재확인</p></div>
+    <div class="netcell"><span class="en">INDIA</span><b>인도</b><p>피팅 · 플랜지 가공품</p></div>
   </div>
+  <p class="netnote mono rv">동일 사양서를 4개 권역에 같은 조건으로 발송 → 회신을 한 장의 비교표로 정리</p>
 </div></section>
 
-<!-- 취급 소재 -->
-<section class="viewer" id="materials"><div class="wrap">
-  <div class="viewer-grid">
-    <div class="stage rv"><canvas id="viewCanvas"></canvas></div>
+<!-- (5) 마무리 -->
+<section id="close"><div class="wrap">
+  <div class="close-grid">
     <div class="rv">
-      <p class="eyebrow">취급 소재</p>
-      <h2 class="h-xl" id="mTitle">스테인리스</h2>
-      <p class="cap" id="mDesc" style="margin-top:12px;max-width:38ch">부식에 강한 크롬·니켈계 강재.
-        식품기계·플랜트·건축 설비에 가장 널리 쓰입니다.</p>
-      <div class="chips" id="mChips" style="margin-top:var(--lg)"></div>
-      <div style="margin-top:var(--xl)">
-        <div class="rowline"><span>대표 강종</span><span id="mGrade">STS304 · 316 · 316L · 430</span></div>
-        <div class="rowline"><span>취급 형상</span><span id="mShape">판재 · 환봉 · 각재 · 파이프</span></div>
-        <div class="rowline"><span>검수 방식</span><span id="mQc">성분 실측 + 밀시트 대조</span></div>
+      <h2 class="close-h">손에 있는 도면 한 장으로<br>시작하십시오</h2>
+      <div class="hero-cta">
+        <button class="btn btn-accent" id="ctaUpload" type="button">파일 올리기</button>
+        <button class="btn btn-outline" id="ctaText" type="button">텍스트로 적기</button>
       </div>
-      <p class="cap" style="margin-top:var(--lg);font-size:12.5px" id="mNote">
-        정형재만 취급합니다. 가공 완료품·도금 완료재는 성분 판정이 불가해 다루지 않습니다.</p>
+      <p class="orgline mono">GRIT CORPORATION · metalbridge.ai</p>
     </div>
-  </div>
-</div></section>
-
-<!-- FAQ -->
-<section id="faq" style="padding-top:0"><div class="wrap">
-  <div class="sec-head rv"><div><p class="eyebrow">자주 묻는 질문</p><h2 class="h-xl">먼저 확인하시는 것들.</h2></div></div>
-  <div class="faq rv">
-    <details open><summary>도면을 올리면 우리 설계가 외부로 새는 것 아닙니까</summary>
-      <p>견적 요청에 필요한 사양 항목(재질·치수·수량·규격)만 추출해 공급처에 전달합니다.
-        도면 원본과 부품명·프로젝트명은 발송 대상에서 제외되며, 요청 시 비밀유지계약을 먼저 체결합니다.</p></details>
-    <details><summary>AI가 잘못 읽으면 어떻게 됩니까</summary>
-      <p>판독 결과는 그대로 발송되지 않습니다. 담당자가 검토·보정한 뒤에만 공급처로 나갑니다.
-        확신이 낮은 항목은 화면에 표시되고, 애매하면 발송 전에 다시 여쭙니다.</p></details>
-    <details><summary>견적은 어떤 형태로 받게 됩니까</summary>
-      <p>한 건의 요청을 한국·중국·일본·인도 공급처에 동시에 보내고, 회신된 단가를 납기·성적서 조건과 함께 한 장의 비교표로 정리해 드립니다.
-        같은 STS316L도 원산지와 수량에 따라 단가가 크게 달라지기 때문에, 비교할 수 있게 드리는 것이 가장 도움이 됩니다.</p></details>
-    <details><summary>소량도 요청할 수 있습니까</summary>
-      <p>가능합니다. 다만 밀 직발주는 최소 주문량이 있어 소량은 유통 재고나 잉여 재고 쪽에서 답이 옵니다.
-        수량이 적을수록 국내·일본 상사 회신이 유리한 경우가 많습니다.</p></details>
-    <details><summary>회신까지 얼마나 걸립니까</summary>
-      <p>강종과 물량에 따라 다릅니다. 국내 재고가 있는 건은 하루 이틀 안에 답이 오지만,
-        해외 밀에 직접 물어야 하는 건은 며칠이 걸립니다. 접수 시점에 예상 소요를 먼저 알려드리고,
-        회신이 들어오는 대로 순차적으로 공유해 드립니다.</p></details>
-  </div>
-</div></section>
-
-<section class="cta"><div class="wrap rv">
-  <p class="eyebrow" style="color:var(--mute)">시작하기</p>
-  <h2 class="display" style="margin:var(--lg) 0 0">Send us<br>the file.</h2>
-  <p class="cap" style="color:var(--mute);margin-top:var(--lg);max-width:48ch;font-size:16px">
-    형식을 맞추지 않으셔도 됩니다. 지금 가지고 계신 그 파일, 혹은 필요한 강종 한 줄이면 충분합니다.
-    사양 정리는 저희 몫입니다.</p>
-  <div class="hero-cta">
-    <a class="btn btn-accent" href="#top">문의창으로 이동</a>
-    <button class="btn btn-ghost" id="ctaAsk">먼저 소재 상담</button>
+    <div class="faq rv">
+      <details open><summary>올린 도면은 공개됩니까</summary>
+        <p>공급처에는 견적에 필요한 사양만 전달합니다. 원본 도면은 고객 승인 없이 나가지 않습니다.</p></details>
+      <details><summary>소량도 됩니까</summary>
+        <p>단품 1본도 접수합니다. 수량에 따라 응답 가능한 공급처가 달라집니다.</p></details>
+      <details><summary>얼마나 걸립니까</summary>
+        <p>사양이 확정되면 바로 발송합니다. 회신 시점은 품목과 권역에 따라 다르며 접수 시 안내합니다.</p></details>
+    </div>
   </div>
 </div></section>
 
 <footer><div class="wrap">
-  <div class="fcols">
-    <div>
-      <div class="logo" style="font-size:26px">METAL BRIDGE<span class="dot">.</span></div>
-      <p class="cap" style="margin-top:var(--md);max-width:30ch">특수 소재 견적 플랫폼.
-        소재와 공급망을 잇습니다.</p>
-      <p class="cap" style="margin-top:var(--md);font-size:13px">운영 — Grit Corporation<br>
-        <span style="color:var(--stone)">그릿코퍼레이션</span></p>
-    </div>
-    <div><h5>서비스</h5><a href="#top">견적 문의</a><a href="#ai">소재 상담</a><a href="#materials">취급 소재</a></div>
-    <div><h5>공급망</h5><a href="#network">한국·중국</a><a href="#network">일본·인도</a><a href="#">공급사 등록</a></div>
-    <div><h5>품질</h5><a href="#">검수 기준</a><a href="#">성적서 정책</a><a href="#">분쟁 처리</a></div>
-    <div><h5>회사</h5><a href="#">소개</a><a href="#">비밀유지</a><a href="#">문의</a></div>
-  </div>
   <div class="fine">
-    <span>© 2026 Grit Corporation · METAL BRIDGE</span><span>metalbridge.ai</span><span>이용약관</span><span>개인정보처리방침</span><span>비밀유지 정책</span><span>대한민국 · 한국어</span>
+    <span>&copy; 2026 Grit Corporation &middot; METAL BRIDGE</span>
+    <a href="#">이용약관</a><a href="#">개인정보처리방침</a><a href="#">비밀유지 정책</a>
+    <span>대한민국 · 한국어</span>
   </div>
 </div></footer>
 
-<button class="fab" id="fab" aria-label="소재 AI 상담 열기"><i></i>소재 AI 상담</button>
+<button class="fab" id="fab" aria-label="소재 AI 상담 열기"><i></i>AI 상담</button>
 <div class="aiwin" id="aiwin" role="dialog" aria-label="소재 AI 상담">
   <div class="top">
     <div><b>METAL BRIDGE 소재 AI</b><span>강종·규격·성적서 무엇이든</span></div>
-    <button id="aiClose" aria-label="닫기">×</button>
+    <button id="aiClose" aria-label="닫기">&times;</button>
   </div>
   <div class="log" id="fabLog"></div>
   <div class="foot">
@@ -376,10 +192,9 @@
       <input id="fabInput" placeholder="예: 316과 316L 차이가 뭡니까" aria-label="질문 입력">
       <button id="fabSend">질문</button>
     </div>
-    <a class="cta" href="#rfq" id="fabCta">자료 올리고 견적 요청하기 →</a>
+    <a class="cta" href="#top" id="fabCta">자료 올리고 견적 요청하기 &rarr;</a>
   </div>
 </div>
-
 
 <script type="module" src="/src/main.js"></script>
 </body>

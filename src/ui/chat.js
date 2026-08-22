@@ -124,7 +124,7 @@ function itemBlock(rows){
   var head=rows.slice(0,4).map(itemLine).filter(Boolean).join('<br>');
   var more=rows.length>4 ? '<br>외 '+(rows.length-4)+'건' : '';
   return '<span class="mini" style="border-left:2px solid var(--molten);padding-left:8px;margin-top:8px">'+
-         '<b style="color:var(--ink)">해당 품목 '+rows.length+'건</b><br>'+head+more+'</span>';
+         '<b style="color:var(--charcoal)">해당 품목 '+rows.length+'건</b><br>'+head+more+'</span>';
 }
 function askQ(){
   if(S.qPos>=S.qQueue.length) return askExtra();
@@ -179,6 +179,15 @@ function submit(text){
 document.getElementById('askSend').addEventListener('click',function(){ submit(askIn.value); });
 askIn.addEventListener('keydown',function(e){ if(e.key==='Enter') submit(this.value); });
 
+// 히어로의 직접 입력 — 파일이 없는 방문자를 위한 같은 진입점
+var heroIn=document.getElementById('heroIn'), heroSend=document.getElementById('heroSend');
+function heroSubmit(){
+  if(!heroIn || !heroIn.value.trim()) return;
+  submit(heroIn.value); heroIn.value='';
+}
+if(heroSend) heroSend.addEventListener('click',heroSubmit);
+if(heroIn) heroIn.addEventListener('keydown',function(e){ if(e.key==='Enter') heroSubmit(); });
+
 function askExtra(){
   S.MODE='extra';
   sys('<b>마지막으로 여쭙겠습니다.</b><span class="mini">견적 외에 함께 의논하실 내용이 있으십니까?</span>');
@@ -204,7 +213,7 @@ function finishAsk(){
   var cnt={}; MSN.forEach(function(m){ cnt[m.sp.c]=(cnt[m.sp.c]||0)+1; });
   sys('<b>'+(S.ITEMS.length? ok+'건을 공급망에 보냅니다.' : '문의를 접수했습니다.')+'</b>'+
       (MSN.length? '<span class="mini" style="border-left:2px solid var(--molten);padding-left:8px">'+
-        '<b style="color:var(--ink)">후보 공급처 '+MSN.length+'곳 · 1차 발송 '+Math.min(8,MSN.length)+'곳</b><br>'+
+        '<b style="color:var(--charcoal)">후보 공급처 '+MSN.length+'곳 · 1차 발송 '+Math.min(8,MSN.length)+'곳</b><br>'+
         Object.keys(cnt).map(function(k){return k+' '+cnt[k]+'곳';}).join(' · ')+'<br>'+
         MSN.slice(0,3).map(function(m){return m.sp.n+' ('+m.score+'%)';}).join('<br>')+
         (MSN.length>3?'<br>외 '+(MSN.length-3)+'곳':'')+'</span>' : '')+
