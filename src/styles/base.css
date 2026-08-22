@@ -95,6 +95,8 @@ input,textarea,select{font-family:inherit}
 .donebox-sep{width:1px;height:44px;background:var(--hairline)}
 .donebox-state{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--success)}
 .donebox-state i{width:8px;height:8px;border-radius:50%;background:var(--success);flex:none}
+.donebox-state.pending{color:var(--mute)}
+.donebox-state.pending i{background:var(--mute)}
 .donebox-act{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
 
 /* 사양표 (신뢰 근거) */
@@ -117,7 +119,7 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 
 /* ── ② 판독 결과 ── */
 .spec-wrap{overflow-x:auto}
-.spec{width:100%;border-collapse:collapse;font-size:15px;min-width:860px}
+.spec{width:100%;border-collapse:collapse;font-size:15px;min-width:720px}
 .spec th{text-align:left;padding:var(--md) 16px;font-family:'JetBrains Mono',monospace;
   font-size:11px;font-weight:400;letter-spacing:.06em;color:var(--mute);
   background:var(--cloud);border-bottom:1px solid var(--hairline);white-space:nowrap}
@@ -285,7 +287,6 @@ footer{padding:var(--xl) 0}
   .spec td::before{content:attr(data-l);font-family:'JetBrains Mono',monospace;
     font-size:11px;color:var(--mute);flex:0 0 62px;text-align:left}
   .spec td .sub{text-align:right}
-  .spec td:last-child{display:none}
   .spec-wrap{overflow:visible}
 }
 @media(max-width:560px){

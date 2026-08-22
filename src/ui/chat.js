@@ -9,6 +9,7 @@ import { exportRfq, rfqNo } from '../engine/export-rfq.js';
 import { submitRfq } from '../engine/submit.js';
 import { renderSpec } from './spec-table.js';
 import { buildQuestions, applyAnswer } from './questions.js';
+import { syncHero } from './misc.js';
 export function initChat(){
 const dropEl   = document.getElementById('drop');
 const fileInput= document.getElementById('fileInput');
@@ -35,16 +36,14 @@ function chips(list,fn){
     askChips.appendChild(b);
   });
 }
-function hideDrop(){ if(dropEl && dropEl.parentNode) dropEl.style.display='none'; }
-
 ['dragenter','dragover'].forEach(function(ev){
-  dropEl.addEventListener(ev,function(e){ e.preventDefault(); e.stopPropagation(); dropEl.classList.add('hot'); });
+  dropEl.addEventListener(ev,function(e){ e.preventDefault(); e.stopPropagation(); syncHero('drag'); });
 });
 ['dragleave','dragend'].forEach(function(ev){
-  dropEl.addEventListener(ev,function(e){ e.preventDefault(); dropEl.classList.remove('hot'); });
+  dropEl.addEventListener(ev,function(e){ e.preventDefault(); syncHero(); });
 });
 dropEl.addEventListener('drop',function(e){
-  e.preventDefault(); e.stopPropagation(); dropEl.classList.remove('hot');
+  e.preventDefault(); e.stopPropagation(); syncHero();
   if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length) takeFiles(e.dataTransfer.files);
 });
 ['dragover','drop'].forEach(function(ev){ window.addEventListener(ev,function(e){ e.preventDefault(); },false); });
@@ -68,7 +67,7 @@ function takeFiles(list){
   Array.prototype.forEach.call(list,function(f){
     if(S.picked.length<6){ S.picked.push({name:f.name,size:f.size}); real.push(f); S.RAWFILES.push(f); }
   });
-  hideDrop();
+  syncHero('reading');
   real.forEach(function(f){
     me('<b>'+extOf(f.name)+'</b> '+f.name.replace(/[<>]/g,'')+
        '<span class="mini">'+fmtSize(f.size)+'</span>');
@@ -91,6 +90,7 @@ function startRead(files, waitBub){
     S.ITEMS=S.ITEMS.concat(add);
     S.GAPS=diagnose(S.ITEMS);
     renderSpec();
+    syncHero();
     if(status) status.textContent = S.ITEMS.length? '판독 완료' : '확인 필요';
     if(waitBub && waitBub.parentNode) waitBub.parentNode.removeChild(waitBub);
     if(!add.length){
@@ -131,6 +131,7 @@ function askQ(){
   var r=S.qQueue[S.qPos];
   sys('<b>'+(S.qPos+1)+'/'+S.qQueue.length+' · '+r.label+'</b><span class="mini">'+r.q+'</span>'+itemBlock(r.rows));
   askIn.placeholder = r.ph || '답변을 입력해 주십시오';
+  syncHero();
   chips(r.opts, function(v){ submit(v); });
 }
 function submit(text){
@@ -203,6 +204,51 @@ function askExtra(){
     setTimeout(finishAsk,300);
   });
 }
+/** 완료 블록 — 히어로 업로드 영역 바로 아래. 접수번호 · 전달 상태 · 버튼 2개 */
+function openDoneBox(no){
+  var box=document.getElementById('doneBox');
+  if(!box) return;
+  box.hidden=false;
+  var noEl=document.getElementById('doneNo');
+  if(noEl) noEl.textContent=no;
+  var stEl=document.getElementById('doneState');
+  var stWrap=box.querySelector('.donebox-state');
+  function mark(text,done){
+    if(stEl) stEl.textContent=text;
+    if(stWrap) stWrap.classList.toggle('pending',!done);
+  }
+  mark('아직 전달되지 않았습니다',false);
+
+  var dl=document.getElementById('dlRfq2');
+  if(dl && !dl.dataset.on){
+    dl.dataset.on='1';
+    dl.addEventListener('click',function(){
+      exportRfq();
+      if(!S.SENT) mark('요청서를 내려받았습니다 · 아직 전달되지 않았습니다',false);
+    });
+  }
+  var send=document.getElementById('sendStaff');
+  if(send && !send.dataset.on){
+    send.dataset.on='1';
+    send.addEventListener('click',function(){
+      var btn=this; btn.disabled=true; btn.textContent='전송 중…';
+      submitRfq().then(function(res){
+        btn.disabled=false; btn.textContent='담당자에게 보내기';
+        if(res.mode==='db'){
+          mark('한국 · 중국 · 일본 · 인도 발송 준비 완료 · '+res.no,true);
+          sys('<b>담당자에게 접수되었습니다.</b><span class="mini">접수번호 '+res.no+
+              '<br>올려주신 자료와 판독 결과가 함께 저장됐습니다. 담당자가 사양을 확인한 뒤 연락드립니다.</span>');
+        } else {
+          if(res.run) res.run();
+          mark('메일 앱으로 전환했습니다 · '+res.no,false);
+          sys('<b>메일로 전달합니다.</b><span class="mini">접수번호 '+res.no+
+              '<br>메일 앱이 열리면 요청서 파일을 첨부해 보내 주십시오.</span>');
+        }
+        syncHero();
+      });
+    });
+  }
+}
 function finishAsk(){
   if(S.finished) return; S.finished=true; S.MODE='done';
   var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;
@@ -222,39 +268,13 @@ function finishAsk(){
       '</span>'+
       (left? '남은 '+left+'건은 담당자가 자료를 열어 확인한 뒤 다시 여쭙겠습니다.'
            : '요청서를 만들어 한국·중국·일본·인도 공급처에 보냅니다.'));
-  var b=sys('<b>남은 절차는 두 가지입니다.</b>'+
-    '<span class="mini">① 요청서를 내려받아 보관하시고 ② 담당자에게 보내기를 눌러 주십시오.<br>'+
-    '보내기를 누르셔야 담당자에게 전달됩니다.</span>'+
-    '<button class="btn btn-secondary btn-sm" id="dlRfq3" style="width:100%;margin-top:10px">① 요청서 내려받기 (엑셀)</button>'+
-    '<button class="btn btn-accent btn-sm" id="sendStaff" style="width:100%;margin-top:6px">② 담당자에게 보내기</button>'+
-    '<span class="mini" id="sendState" style="color:var(--molten)">아직 전달되지 않았습니다</span>');
-  b.querySelector('#dlRfq3').addEventListener('click',function(){
-    exportRfq();
-    var st=document.getElementById('sendState');
-    if(st && !S.SENT) st.innerHTML='요청서를 내려받았습니다 · <b>아직 전달되지 않았습니다</b>';
-  });
-  b.querySelector('#sendStaff').addEventListener('click',function(){
-    var btn=this; btn.disabled=true; btn.textContent='전송 중…';
-    var st=document.getElementById('sendState');
-    submitRfq().then(function(res){
-      btn.disabled=false; btn.textContent='② 담당자에게 보내기';
-      if(res.mode==='db'){
-        if(st){ st.style.color='var(--success)';
-          st.innerHTML='<b>접수 완료</b> · 접수번호 '+res.no+' · 자료와 요청서가 함께 저장됐습니다.'; }
-        sys('<b>담당자에게 접수되었습니다.</b><span class="mini">접수번호 '+res.no+
-            '<br>올려주신 자료와 판독 결과가 함께 저장됐습니다. 담당자가 사양을 확인한 뒤 연락드립니다.</span>');
-      } else {
-        if(res.run) res.run();
-        if(st){ st.style.color='var(--molten)';
-          st.innerHTML='메일 앱으로 전환했습니다 · 접수번호 '+res.no+
-          '<br>내려받으신 요청서 파일을 첨부해 발송해 주십시오.'; }
-        sys('<b>메일로 전달합니다.</b><span class="mini">접수번호 '+res.no+
-            '<br>메일 앱이 열리면 요청서 파일을 첨부해 보내 주십시오.</span>');
-      }
-    });
-  });
+  sys('<b>남은 절차는 두 가지입니다.</b>'+
+    '<span class="mini">위 업로드 영역 아래의 완료 블록에서 ① 요청서를 내려받아 보관하시고<br>'+
+    '② 담당자에게 보내기를 눌러 주십시오. 보내기를 누르셔야 전달됩니다.</span>');
+  openDoneBox(no);
   askIn.placeholder='추가로 하실 말씀이 있으면 적어주십시오';
   chips(['자료 더 올리기'],function(){ S.MODE='free'; S.finished=false; fileInput.click(); });
   renderSpec();
+  syncHero();
 }
 }

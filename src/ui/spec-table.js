@@ -20,7 +20,7 @@ export function renderSpec(){
   document.getElementById('specMeta').textContent =
     '품목 '+S.ITEMS.length+'건 · 확정 '+ok+' · 조건부 '+cond+' · 확인 필요 '+no;
   var h='<div class="spec-wrap"><table class="spec"><thead><tr>'+
-    '<th>No</th><th>재질</th><th>형상</th><th>치수</th><th>수량</th><th>판독</th><th>원문</th></tr></thead><tbody>';
+    '<th>No</th><th>재질</th><th>형상</th><th>치수</th><th>수량</th><th>판독</th></tr></thead><tbody>';
   S.ITEMS.forEach(function(it){
     h+='<tr><td class="mono" data-l="No">'+it.no+'</td>'+
        '<td data-l="재질"><div class="m">'+(it.grades.join(' / ')||'(미기재)')+'</div>'+
@@ -28,8 +28,7 @@ export function renderSpec(){
        '<td data-l="형상">'+it.shape+'</td>'+
        '<td class="mono" data-l="치수">'+it.dim+(it.lenNote?'<div class="sub">'+it.lenNote+'</div>':'')+'</td>'+
        '<td class="mono" data-l="수량">'+(it.qty||'—')+'</td>'+
-       '<td data-l="판독">'+badge(it.state)+(it.issues.length?'<div class="sub">'+it.issues.join(' · ')+'</div>':'')+'</td>'+
-       '<td class="sub" data-l="원문" style="max-width:220px">'+it.raw.slice(0,60).replace(/[<>]/g,'')+'</td></tr>';
+       '<td data-l="판독">'+badge(it.state)+(it.issues.length?'<div class="sub">'+it.issues.join(' · ')+'</div>':'')+'</td></tr>';
   });
   h+='</tbody></table></div>';
   h+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--lg);align-items:center">'+

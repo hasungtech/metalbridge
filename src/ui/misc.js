@@ -1,5 +1,40 @@
-/** 떠 있는 소재 상담창 · 내부 링크 스크롤 · 히어로 이동 */
+/** 떠 있는 소재 상담창 · 내부 링크 스크롤 · 히어로 상태 파생 */
 import { S, reduce } from '../state.js';
+
+/**
+ * 히어로 업로드 영역의 5개 상태를 S 에서 파생합니다.
+ * S 에 화면 전용 필드를 추가하지 않고 기존 값만 읽습니다.
+ *   force: 'drag' | 'reading' — 순간 상태는 호출부가 알려줍니다.
+ */
+export function syncHero(force){
+  var drop=document.getElementById('drop');
+  if(!drop) return;
+  var glyph=drop.querySelector('.up-glyph');
+  var title=document.getElementById('upTitle');
+  var sub=document.getElementById('upState');
+  var files=S.picked.length, items=S.ITEMS.length, no=S.ANS.__no||'';
+  var st;
+  if(force==='drag'){
+    st={c:'hot',g:'\u2193',t:'놓으면 바로 판독합니다',s:'파일을 놓으십시오'};
+  } else if(force==='reading'){
+    st={c:'reading',g:'\u25D0',t:'자료를 읽고 있습니다',s:'파일 '+files+'건 업로드 완료'};
+  } else if(S.SENT||S.MODE==='done'){
+    st={c:'done',g:'\u2713',t:'요청서가 준비되었습니다',s:(no?no+' · ':'')+'품목 '+items+'건'};
+  } else if((S.MODE==='qa'||S.MODE==='extra')&&S.qQueue&&S.qQueue.length){
+    st={c:'done',g:'\u2713',t:'판독을 마쳤습니다',
+        s:'확인 문답 진행 중 · '+Math.min(S.qPos+1,S.qQueue.length)+' / '+S.qQueue.length};
+  } else if(items){
+    st={c:'done',g:'\u2713',t:'판독을 마쳤습니다',s:(no?no+' / ':'')+'파일 '+files+'건'};
+  } else {
+    st={c:'',g:'+',t:'여기에 도면·BOM을 놓으십시오',s:'클릭해서 선택 · 여러 개 가능'};
+  }
+  drop.classList.remove('hot','reading','done');
+  if(st.c) drop.classList.add(st.c);
+  if(glyph) glyph.textContent=st.g;
+  if(title) title.textContent=st.t;
+  if(sub) sub.textContent=st.s;
+}
+
 export function initMisc(){
 /* ══════════ 소재 상담 ══════════ */
 var KB=[
