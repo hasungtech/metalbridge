@@ -14,6 +14,10 @@ const SAMPLE = 'tests/fixtures/견적의뢰_구매품_AL외.pdf';
  * DataTransfer 로 직접 주입해 같은 change 경로를 태웁니다.
  */
 async function attachSample(page) {
+  // 필수 동의 없이는 업로드가 막힙니다 (개인정보 수집·이용 동의)
+  const agree = page.locator('#agreeReq');
+  if (await agree.count()) await agree.check();
+
   await page.setInputFiles('#fileInput', SAMPLE);
   const attached = await page.evaluate(() => document.getElementById('fileInput').files.length);
   if (attached > 0) return;
@@ -66,4 +70,15 @@ test('DOM 훅이 모두 존재', async ({ page }) => {
     await expect(page.locator('#' + id)).toHaveCount(1);
   }
   await expect(page.locator('.abub.sys')).toHaveCount(1);
+});
+
+test('동의 없이는 접수되지 않는다', async ({ page }) => {
+  await page.goto('/');
+  await page.fill('#askIn', 'STS316L 판재 t12 4톤');
+  await page.click('#askSend');
+  await expect(page.locator('#consent')).toHaveClass(/warn/);
+
+  await page.setInputFiles('#fileInput', SAMPLE);
+  await page.waitForTimeout(3000);
+  await expect(page.locator('#specBody .card')).toHaveCount(0);
 });

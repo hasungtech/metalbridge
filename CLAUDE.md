@@ -103,6 +103,10 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
   방어선이므로 `with check (true)` 를 쓰지 마십시오. 길이·개수 상한, 상태 고정,
   실존 `rfq_id` 검사를 겁니다 (`supabase/2026-08-22_harden_anon_insert.sql`)
 - 진행 상태(`rfq.status`)는 담당자만 바꿉니다. 접수 시점은 항상 `접수`
+- **`INSERT ... RETURNING` 을 쓰지 마십시오.** SELECT 권한과 SELECT 정책을 둘 다 요구해
+  익명 경로에서 실패합니다. id 는 클라이언트에서 만들어 넣습니다 (`submit.js` 의 `newId()`)
+- **필수 동의 없이는 접수되지 않습니다.** `rfq.agreed_at` 이 null 이면 RLS 가 막습니다
+  (`supabase/2026-08-22_consent.sql`). 화면 체크박스는 보조 수단입니다
 - 마이그레이션은 `supabase/` 아래에 날짜 파일로 남기십시오
 
 ### 엑셀 내려받기 — 받는 사람을 확인하십시오
@@ -136,6 +140,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 |---|---|---|
 | `/` | `index.html` → `src/main.js` | 방문자 |
 | `/admin` | `admin.html` → `src/admin/main.js` | 담당자 (Supabase Auth) |
+| `/privacy` `/terms` | `privacy.html` `terms.html` → `src/legal/main.js` | 법정 고지 (정적) |
 
 Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 **백오피스는 xlsx·pdf 청크를 받지 않습니다** — 무거운 파서를 담당자 화면에 끌어오지 마십시오.
@@ -164,4 +169,8 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 - [ ] 공급처 회신 입력 화면 (지금은 엑셀 수신)
 - [ ] 접수 알림 (Edge Function → 메일 또는 슬랙)
 - [ ] 로고 선정 (`design_handoff_v4/METAL BRIDGE 로고 시안.dc.html` 10안) → 파비콘·앱 아이콘 교체
-- [ ] 회사 소재지·설립·사업자번호 확정 후 푸터 반영
+- [ ] 회사 정보 확정 → `privacy.html` · `terms.html` 의 `.todo` 표시 5곳 채우기
+      (통신판매업 신고번호 · 대표 전화번호 2곳 · 시행일 2곳)
+      확정분: 상호 (주) 그릿코퍼레이션 · 대표자 송시형 · 사업자등록번호 130-88-01458 ·
+      소재지 부산광역시 금정구 조리2길 28 · 개인정보보호책임자 송시형(대표)
+- [ ] 법정 고지 문안 법무 검토

@@ -1,0 +1,27 @@
+/* 약관·처리방침 페이지 — 읽기 위한 화면. 같은 토큰·형태 규칙을 씁니다 */
+.legal{padding:calc(var(--section) + var(--sm)) 0;border-bottom:0}
+.legal .wrap{max-width:860px}
+.legal-h{font-size:clamp(28px,3.4vw,40px);font-weight:700;letter-spacing:-.03em;margin:var(--md) 0 var(--sm)}
+.legal-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mute);letter-spacing:.04em;margin:0}
+.legal-lead{font-size:16px;color:var(--mute);line-height:1.7;margin:var(--lg) 0 0;word-break:keep-all}
+.legal-toc{border:1px solid var(--hairline);padding:18px 22px;margin:var(--section) 0 0}
+.legal-toc ol{margin:0;padding-left:1.3em;columns:2;column-gap:var(--section)}
+.legal-toc li{font-size:14px;padding:3px 0;break-inside:avoid}
+.legal-toc a:hover{color:var(--molten)}
+.legal-sec{margin-top:var(--section);scroll-margin-top:80px}
+.legal-sec h2{font-size:19px;font-weight:700;letter-spacing:-.02em;margin:0 0 var(--md);word-break:keep-all}
+.legal-sec p,.legal-sec li{font-size:15px;line-height:1.75;color:var(--charcoal);word-break:keep-all}
+.legal-sec p{margin:0 0 var(--md)}
+.legal-sec ul,.legal-sec ol{margin:0 0 var(--md);padding-left:1.3em}
+.legal-sec li{margin:4px 0}
+.legal-sec table{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 var(--md)}
+.legal-sec th{text-align:left;background:var(--cloud);border:1px solid var(--hairline);
+  padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:400;
+  letter-spacing:.05em;color:var(--mute);white-space:nowrap}
+.legal-sec td{border:1px solid var(--hairline);padding:9px 12px;vertical-align:top;word-break:keep-all}
+.legal-note{background:var(--cloud);border-left:3px solid var(--molten);padding:14px 18px;margin:0 0 var(--md)}
+.legal-note p{margin:0;font-size:14px}
+.todo{background:var(--blue-tint);border:1px dashed var(--blue-hi);padding:2px 8px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue-deep);white-space:nowrap}
+.legal-back{display:inline-flex;margin-top:var(--section)}
+@media(max-width:768px){ .legal-toc ol{columns:1} }
