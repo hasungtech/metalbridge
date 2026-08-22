@@ -30,7 +30,7 @@ alter table public.rfq_items  add  constraint rfq_items_len_guard check (
   length(coalesce(category,'')) <= 60  and
   length(coalesce(shape,''))    <= 60  and
   length(coalesce(dim,''))      <= 200 and
-  length(coalesce(qty,''))      <= 60  and
+  (qty is null or qty between 0 and 1000000) and   -- qty 는 integer 컬럼입니다
   length(coalesce(state,''))    <= 20  and
   length(coalesce(issues,''))   <= 500 and
   length(coalesce(raw,''))      <= 2000
@@ -141,10 +141,21 @@ revoke all on public.rfq_board from anon;
 grant select on public.rfq_board to authenticated;
 
 -- 테이블 자체도 익명 select 권한이 남아 있지 않은지 확인합니다.
+--
+--  주의: INSERT ... RETURNING 은 SELECT 권한과 SELECT 정책을 둘 다 요구합니다.
+--  익명에게 조회를 열지 않기 위해, 클라이언트가 id 를 직접 만들어 넣고
+--  되돌려받지 않도록 submit.js 를 고쳤습니다. 그래서 select 를 회수해도 됩니다.
 revoke select on public.rfq, public.rfq_items, public.rfq_answers,
                  public.rfq_suppliers, public.rfq_files, public.suppliers from anon;
 grant  insert on public.rfq, public.rfq_items, public.rfq_answers,
                  public.rfq_suppliers, public.rfq_files to anon;
+
+-- 담당자는 전부 볼 수 있어야 합니다 (Supabase 기본 grant 에 의존하지 않고 명시)
+grant select, insert, update, delete on
+  public.rfq, public.rfq_items, public.rfq_answers,
+  public.rfq_suppliers, public.rfq_files, public.suppliers to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+grant usage, select on all sequences in schema public to anon;
 
 -- ── 6. 확인
 --   select table_name, privilege_type from information_schema.role_table_grants
