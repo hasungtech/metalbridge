@@ -27,8 +27,11 @@ create policy "anon insert rfq" on public.rfq
     and agreed_at >= now() - interval '1 day'
   );
 
--- 백오피스 목록에서도 동의 여부를 보이게 합니다
-create or replace view public.rfq_board as
+-- 백오피스 목록에서도 동의 여부를 보이게 합니다.
+-- create or replace 는 컬럼을 줄이지 못합니다 ("cannot drop columns from view").
+-- schema.sql 의 뷰가 이 파일보다 넓어질 수 있으므로 지우고 다시 만듭니다.
+drop view if exists public.rfq_board;
+create view public.rfq_board as
 select
   r.id, r.rfq_no, r.created_at, r.status, r.contact, r.company,
   r.due, r.place, r.item_count, r.sendable,

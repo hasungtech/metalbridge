@@ -136,10 +136,22 @@ async function answer(page, text) {
   const chip = page.locator(`#askChips button:has-text("${text}")`).first();
   if (await chip.count()) await chip.click();
   else { await page.fill('#askIn', text); await page.press('#askIn', 'Enter'); }
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(350);
 }
 
-test('품목을 못 찾으면 소재·형상·치수·수량을 묻는다', async ({ page }) => {
+/** 남은 문답을 끝까지 밀어 완료 블록을 띄웁니다. */
+async function runToDone(page, fallback = '부산') {
+  for (let i = 0; i < 30; i++) {
+    if (await page.locator('#doneBox').isVisible()) return true;
+    const chips = page.locator('#askChips button');
+    if (await chips.count()) await chips.first().click();
+    else { await page.fill('#askIn', fallback); await page.press('#askIn', 'Enter'); }
+    await page.waitForTimeout(350);
+  }
+  return page.locator('#doneBox').isVisible();
+}
+
+test('품목을 못 찾으면 소재·강종·형상·치수·수량을 묻는다', async ({ page }) => {
   await page.goto('/');
   await page.check('#agreeReq');
   // 소재 이름만 적으면 파서가 품목으로 읽지 못합니다. 그때 대화로 채워야 합니다.
@@ -150,20 +162,58 @@ test('품목을 못 찾으면 소재·형상·치수·수량을 묻는다', asyn
   await answer(page, 'buyer@example.com');
   await expect(page.locator('.abub.sys').last()).toContainText('어떤 소재가 필요하십니까');
   await answer(page, '알루미늄');
+  // 소재군을 고르면 그 소재의 강종만 나와야 합니다 (알루미늄에 SS400 이 뜨면 안 됩니다)
+  await expect(page.locator('.abub.sys').last()).toContainText('어떤 강종입니까');
+  const grades = await page.$$eval('#askChips button', (els) => els.map((e) => e.textContent));
+  expect(grades).toContain('A6061-T6');
+  expect(grades.join(' ')).not.toContain('SS400');
+  await answer(page, 'A6061-T6');
+
   await expect(page.locator('.abub.sys').last()).toContainText('어떤 형태로');
   await answer(page, '판재');
-  await expect(page.locator('.abub.sys').last()).toContainText('치수를 알려주십시오');
-  await answer(page, '1000 × 2000 × t10');
+  // 치수는 형상에 맞춰 나뉘어 나옵니다 — 판재면 두께 다음 폭×길이
+  await expect(page.locator('.abub.sys').last()).toContainText('두께');
+  await answer(page, '10');
+  await expect(page.locator('.abub.sys').last()).toContainText('폭과 길이');
+  await answer(page, '1000 × 2000');
   await expect(page.locator('.abub.sys').last()).toContainText('얼마나 필요하십니까');
-  await answer(page, '20장');
+  await answer(page, '20');
+  await expect(page.locator('.abub.sys').last()).toContainText('단위');
+  await answer(page, '장');
 
   // 대화 답변이 품목 한 줄이 됩니다 — 요청서에 넣을 내용이 생깁니다
   await expect(page.locator('#specBody .card')).toHaveCount(1);
   const card = await page.textContent('#specBody .card');
-  expect(card).toContain('알루미늄');
+  expect(card).toContain('A6061-T6');
   expect(card).toContain('판재');
-  expect(card).toContain('20장');
+  expect(card).toContain('t10 × 1000 × 2000');
   await expect(page.locator('#specMeta')).toContainText('확정 1');
+});
+
+test('견적에 필요한 조건을 모두 묻는다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  await page.fill('#askIn', 'STS316L 판재 1000x2000xt10 20장');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(600);
+
+  // 단가를 좌우하는 항목이 빠지면 공급처가 되묻게 됩니다
+  const want = ['용도', '표면·마감', '가공 범위', '공차', '성적서', '원산지', '인도 조건', '발주 형태'];
+  const seen = new Set();
+  for (let i = 0; i < 30; i++) {
+    if (await page.locator('#doneBox').isVisible()) break;
+    const txt = await page.locator('.abub.sys').last().innerText();
+    want.forEach((w) => { if (txt.includes(w)) seen.add(w); });
+    const chips = page.locator('#askChips button');
+    if (await chips.count()) await chips.first().click();
+    else { await page.fill('#askIn', '부산'); await page.press('#askIn', 'Enter'); }
+    await page.waitForTimeout(350);
+  }
+  expect([...seen].sort()).toEqual([...want].sort());
+
+  // 스테인리스는 고용화 열처리가 기본이라 조질을 묻지 않습니다
+  const all = (await page.$$eval('.abub.sys', (els) => els.map((e) => e.innerText))).join(' ');
+  expect(all).not.toContain('열처리·조질');
 });
 
 test('접수에 실패해도 메일 앱을 열지 않는다', async ({ page }) => {
@@ -172,14 +222,7 @@ test('접수에 실패해도 메일 앱을 열지 않는다', async ({ page }) =
   await page.fill('#askIn', 'STS316L 판재 1000x2000xt10 20장');
   await page.press('#askIn', 'Enter');
   await page.waitForTimeout(600);
-  for (let i = 0; i < 10; i++) {
-    if (await page.locator('#doneBox').isVisible()) break;
-    const chips = page.locator('#askChips button');
-    if (await chips.count()) await chips.first().click();
-    else { await page.fill('#askIn', '부산'); await page.press('#askIn', 'Enter'); }
-    await page.waitForTimeout(400);
-  }
-  await expect(page.locator('#doneBox')).toBeVisible();
+  expect(await runToDone(page)).toBe(true);
 
   const before = page.url();
   await page.click('#sendStaff');

@@ -19,6 +19,13 @@ function safeName(name) {
     .slice(-120) || 'file';
 }
 
+/** rfq_items.qty 는 integer 입니다. 대화로 받은 수량은 "20장" 처럼 단위가 붙을 수 있어
+ *  숫자만 남깁니다. 표시용 원문은 품목의 qty·unit 에 그대로 남아 요청서에 나갑니다. */
+function qtyInt(v) {
+  var n = parseInt(String(v == null ? '' : v).replace(/[^0-9]/g, ''), 10);
+  return Number.isFinite(n) && n >= 0 && n <= 1000000 ? n : null;
+}
+
 /** 접수 id 를 클라이언트에서 만듭니다.
  *  INSERT ... RETURNING 은 SELECT 권한과 SELECT 정책을 둘 다 요구합니다.
  *  익명에게 조회를 열지 않으려면 id 를 미리 정해 되돌려받지 않는 편이 맞습니다. */
@@ -50,6 +57,15 @@ export async function submitRfq() {
         due: S.ANS.due || null,
         place: S.ANS.place || null,
         mtc: S.ANS.mtc || null,
+        // 견적 조건 — 공급처가 되묻지 않도록 답변을 그대로 넘깁니다
+        usage: S.ANS.usage || null,
+        finish: S.ANS.finish || null,
+        heat: S.ANS.heat || null,
+        fab: S.ANS.fab || null,
+        tol: S.ANS.tol || null,
+        origin: S.ANS.origin || null,
+        incoterm: S.ANS.incoterm || null,
+        order_type: S.ANS.repeat || null,
         extra: S.ANS.extra || S.ANS.memo || null,
         item_count: S.ITEMS.length,
         sendable: c.ok,
@@ -67,7 +83,8 @@ export async function submitRfq() {
         category: catOf((it.grades || []).join(' ')),
         shape: it.shape,
         dim: it.dim,
-        qty: it.qty || null,
+        qty: qtyInt(it.qty),
+        unit: it.unit || S.ANS.needUnit || null,
         state: it.state,
         issues: (it.issues || []).join(' · ') || null,
         raw: it.raw,

@@ -135,13 +135,18 @@ function itemBlock(rows){
   return '<span class="mini" style="border-left:2px solid var(--molten);padding-left:8px;margin-top:8px">'+
          '<b style="color:var(--charcoal)">'+t('chat.rowsHead',{n:rows.length})+'</b><br>'+head+more+'</span>';
 }
+/** 질문의 label·q·ph·opts 는 함수여도 됩니다 — 앞선 답변에 따라 달라지는 문항이 있습니다. */
+function val(x){ return typeof x==='function' ? x() : x; }
+
 function askQ(){
+  // when() 이 거짓인 문항은 건너뜁니다 (스테인리스에 조질을 묻지 않는 식)
+  while(S.qPos < S.qQueue.length && S.qQueue[S.qPos].when && !S.qQueue[S.qPos].when()) S.qPos++;
   if(S.qPos>=S.qQueue.length) return askExtra();
   var r=S.qQueue[S.qPos];
-  sys(t('chat.qHead',{i:S.qPos+1,n:S.qQueue.length,label:r.label,q:r.q})+itemBlock(r.rows));
-  askIn.placeholder = r.ph || t('desk.inputPhAnswer');
+  sys(t('chat.qHead',{i:S.qPos+1,n:S.qQueue.length,label:val(r.label),q:val(r.q)})+itemBlock(r.rows));
+  askIn.placeholder = val(r.ph) || t('desk.inputPhAnswer');
   syncHero();
-  chips(r.opts, function(v,label){ submit(v,label); });
+  chips(val(r.opts), function(v,label){ submit(v,label); });
 }
 /** value 는 기록·요청서용(한국어 식별자), display 는 말풍선에 보일 문구입니다. */
 function submit(text, display){
@@ -152,14 +157,14 @@ function submit(text, display){
   askChips.innerHTML='';
   if(S.MODE==='qa'){
     var r=S.qQueue[S.qPos];
-    S.QLOG.push({label:r.label,q:r.q,a:v,rows:r.rows||[]});
+    S.QLOG.push({label:val(r.label),q:val(r.q),a:v,rows:r.rows||[]});
     applyAnswer(r.k,v,r.rows);
     var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;
     if(r.rows && r.rows.length){
       var changed=r.rows.filter(function(n){ return S.ITEMS[n-1] && S.ITEMS[n-1].state==='확정'; }).length;
       sys(t('chat.appliedRows',{rows:r.rows.length,changed:changed,ok:ok,all:S.ITEMS.length})+itemBlock(r.rows));
     } else {
-      sys(t('chat.applied',{label:r.label,a:shown.replace(/[<>]/g,'')}));
+      sys(t('chat.applied',{label:val(r.label),a:shown.replace(/[<>]/g,'')}));
     }
     S.qPos++;
     setTimeout(askQ,300);
