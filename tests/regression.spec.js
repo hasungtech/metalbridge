@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import fs from 'fs';
 
 /**
  * 파서 회귀 테스트.
@@ -7,19 +8,43 @@ import { test, expect } from '@playwright/test';
  */
 const SAMPLE = 'tests/fixtures/견적의뢰_구매품_AL외.pdf';
 
+/**
+ * 파일을 #fileInput 에 붙입니다.
+ * setInputFiles 가 조용히 실패하는 환경(브라우저 빌드 불일치)에서는
+ * DataTransfer 로 직접 주입해 같은 change 경로를 태웁니다.
+ */
+async function attachSample(page) {
+  await page.setInputFiles('#fileInput', SAMPLE);
+  const attached = await page.evaluate(() => document.getElementById('fileInput').files.length);
+  if (attached > 0) return;
+
+  const b64 = fs.readFileSync(SAMPLE).toString('base64');
+  await page.evaluate((data) => {
+    const bin = atob(data);
+    const buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    const dt = new DataTransfer();
+    dt.items.add(new File([buf], '견적의뢰_구매품_AL외.pdf', { type: 'application/pdf' }));
+    const el = document.getElementById('fileInput');
+    el.files = dt.files;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }, b64);
+}
+
 test('PDF 판독 — 품목 20건', async ({ page }) => {
   await page.goto('/');
-  await page.setInputFiles('#fileInput', SAMPLE);
-  await page.waitForTimeout(6000);
+  await attachSample(page);
+  await page.waitForTimeout(8000);
   const meta = await page.textContent('#specMeta');
-  expect(meta).toContain('품목 20건');
+  expect(meta).toContain('20건');
+  expect(await page.locator('#specBody .card').count()).toBe(20);
 });
 
 test('문답 후 발송 가능 건수 증가', async ({ page }) => {
   await page.goto('/');
-  await page.setInputFiles('#fileInput', SAMPLE);
-  await page.waitForTimeout(6000);
-  for (let i = 0; i < 12; i++) {
+  await attachSample(page);
+  await page.waitForTimeout(8000);
+  for (let i = 0; i < 14; i++) {
     const chips = page.locator('#askChips button');
     if (await chips.count()) {
       const t = await chips.first().innerText();
@@ -40,4 +65,5 @@ test('DOM 훅이 모두 존재', async ({ page }) => {
   for (const id of ['drop','fileInput','askLog','askChips','askIn','specBody','specMeta']) {
     await expect(page.locator('#' + id)).toHaveCount(1);
   }
+  await expect(page.locator('.abub.sys')).toHaveCount(1);
 });

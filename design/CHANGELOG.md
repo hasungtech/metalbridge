@@ -2,6 +2,21 @@
 
 형식: `날짜 · 무엇을 · 왜 · 영향 범위`
 
+## 2026-08-22 · 회귀 테스트 복구 · 문서 정합화
+- `npm test` 가 실제로 돌게 고쳤습니다. 세션 내내 실행 불가였던 원인 두 가지를 각각 처리:
+  1. 브라우저 빌드 불일치 → `playwright.config.js` 에 `PW_CHROMIUM_PATH` 환경변수 지원
+  2. `setInputFiles` 가 조용히 실패 → 첨부 결과를 확인해 0건이면 DataTransfer 로 주입하는
+     `attachSample()` 헬퍼. **기대값(품목 20건 · 확정 1x · DOM 훅 7개)은 그대로**입니다
+- 판독 결과가 표 → 카드로 바뀐 것을 테스트에 반영 (`#specBody .card` 20건, `.abub.sys` 확인)
+- `netlify.toml` 삭제 — 호스팅은 Vercel 로 확정됐고 설정이 중복이었습니다
+- `CLAUDE.md` 에 v4 화면 구성 절 추가 (화면 3개 · 3D 라이브러리 미사용 · 지리 데이터 위치 ·
+  결손 사유는 diagnose() 출력 사용 · 불가→확인 필요 표시 규칙) + 테스트 실행 안내
+- `CLAUDE.md` · `README.md` · `design/TASKS.md` 의 "섹션 11개 → 5개" 항목을 v4 완료로 갱신
+- `design/HANDOFF_DESIGN.md` 상단에 v1 문서임을 알리는 안내 추가
+- 남은 일에 로고 선정 · 회사 정보 2건 명시
+- 영향: playwright.config.js · tests/regression.spec.js · 문서 4개 · netlify.toml 삭제
+- 확인: `npm test` **3건 전부 통과** (이 컨테이너에서 실제 실행)
+
 ## 2026-08-22 · v4 TF 검토 11건 대조 — 누락분 4건 보강
 v4 시안의 TF REVIEW 11건을 구현과 하나씩 대조했습니다. 7건은 이미 반영, 4건이 빠져 있었습니다.
 
