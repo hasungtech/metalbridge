@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>백오피스 · METAL BRIDGE</title>
+<link rel="icon" href="/icon-32.png" sizes="32x32">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+</head>
+<body class="admin">
+
+<header class="deskbar"><div class="deskbar-in">
+  <span class="logo">METAL BRIDGE<span class="dot">.</span></span>
+  <span class="deskbar-no mono">백오피스</span>
+  <span class="adm-who mono" id="admWho"></span>
+  <button class="btn btn-outline btn-sm" id="admOut" type="button" hidden>로그아웃</button>
+</div></header>
+
+<!-- 로그인 -->
+<section class="adm-gate" id="admGate" hidden><div class="adm-gate-box">
+  <h1 class="adm-gate-h">담당자 로그인</h1>
+  <p class="cap">등록된 담당자 메일로 로그인 링크를 보냅니다. 비밀번호는 쓰지 않습니다.</p>
+  <form class="adm-gate-form" id="admForm">
+    <input id="admMail" type="email" required autocomplete="email" placeholder="name@gritcorp.kr" aria-label="담당자 이메일">
+    <button class="btn btn-accent" type="submit" id="admSend">로그인 링크 받기</button>
+  </form>
+  <p class="adm-msg" id="admMsg"></p>
+</div></section>
+
+<!-- 목록 -->
+<section class="adm" id="admMain" hidden><div class="adm-wrap">
+  <div class="adm-head">
+    <div class="adm-filters" id="admFilters"></div>
+    <div class="adm-tools">
+      <input id="admQ" placeholder="접수번호 · 연락처 · 고객사 검색" aria-label="검색">
+      <button class="btn btn-outline btn-sm" id="admReload" type="button">새로고침</button>
+    </div>
+  </div>
+  <div class="adm-split">
+    <div class="adm-list" id="admList"></div>
+    <aside class="adm-detail" id="admDetail">
+      <div class="empty"><p>왼쪽에서 요청을 선택하십시오.</p></div>
+    </aside>
+  </div>
+</div></section>
+
+<script type="module" src="/src/admin/main.js"></script>
+</body>
+</html>
