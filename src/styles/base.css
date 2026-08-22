@@ -64,12 +64,14 @@ input,textarea,select{font-family:inherit}
 .intro-cta{display:flex;align-items:center;gap:var(--md);flex-wrap:wrap;margin-top:var(--xl)}
 .intro-go{padding:16px 34px;font-size:16px}
 .intro-note{font-size:12px;color:var(--mute)}
-.intro-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hairline);
-  border:1px solid var(--hairline);margin-top:calc(var(--section) + var(--sm))}
+.intro-sub{font-size:13px;font-weight:700;letter-spacing:.02em;margin:calc(var(--section) + var(--sm)) 0 var(--md)}
+.intro-steps{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hairline);
+  border:1px solid var(--hairline);margin-top:0}
 .intro-steps>div{background:var(--canvas);padding:24px 22px;display:flex;flex-direction:column;gap:10px}
 .intro-steps .n{font-size:11px;color:var(--stone);letter-spacing:.08em}
 .intro-steps b{font-size:17px;font-weight:700}
 .intro-steps p{margin:0;font-size:14px;color:var(--mute);line-height:1.65;word-break:keep-all}
+.intro-steps p b{color:var(--charcoal);font-weight:700}
 .intro-facts{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--md) var(--section);
   margin:var(--xl) 0 0;border-top:1px solid var(--hairline);padding-top:var(--lg)}
 .intro-facts>div{display:flex;gap:var(--md);align-items:baseline}
@@ -199,7 +201,7 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .flow-grid{display:grid;grid-template-columns:1fr 420px;gap:var(--section);align-items:start}
 .flow-grid>*{min-width:0}
 .globe-stage{position:relative;background:var(--cloud);border:1px solid var(--hairline);
-  aspect-ratio:1/1;max-height:660px}
+  aspect-ratio:1/1;max-height:660px;overflow:hidden}
 #globeCanvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
 #globeCanvas:active{cursor:grabbing}
 .globe-labels{position:absolute;inset:0;pointer-events:none}
@@ -298,6 +300,7 @@ footer{padding:var(--xl) 0;border-bottom:0}
 @media(max-width:1024px){
   .intro-steps{grid-template-columns:1fr}
   .intro-facts{grid-template-columns:1fr}
+  .intro-lead br{display:none}
   .desk{height:auto;min-height:0}
   .desk-body{grid-template-columns:1fr}
   .rail{border-left:0;border-top:1px solid var(--hairline);max-height:520px}
@@ -320,7 +323,7 @@ footer{padding:var(--xl) 0;border-bottom:0}
   .intro-cta{margin-top:var(--lg)}
   .intro-cta .btn{width:100%}
   .intro-note{width:100%}
-  .intro-steps{margin-top:var(--xl)}
+  .intro-sub{margin-top:var(--xl)}
   .desk{scroll-margin-top:52px}
   #flow,#about{scroll-margin-top:52px}
   .desk-main{padding:14px 0}
