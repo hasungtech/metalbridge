@@ -2,6 +2,25 @@
 
 형식: `날짜 · 무엇을 · 왜 · 영향 범위`
 
+## 2026-08-22 · 메인 재설계 2단계 — base.css 를 새 레이아웃에 맞춤
+v2 캔버스 실측값 기준. base.css 388줄 → 300줄. 하드코딩 색 0건(#fff 관례 제외).
+
+- 히어로: 검은 면 → --canvas. 그리드 1fr 380px, 3D 오브젝트 620×620 우상단 opacity .55
+- 업로드 영역: 2px dashed, 56px 글리프 + 26px 제목 + 파란 알약 `파일 선택`, 하단에 직접 입력 줄
+- SPECIFICATION 카드: 1px 헤어라인, 헤더 mono 11px, 항목 4개 헤어라인 구분
+- 판독표: 헤더 --cloud + mono 11px, 셀 16px, 치수·수량 mono 14px, 태그 아웃라인 3색
+- 확인 문답: 1fr 1fr, CONVERSATION LOG 패널(min-height 420px), 말풍선 max-width 78%
+- 공급망: --cloud 면에 4열 그리드(v2 기준 — 어두운 반전 아님)
+- 마무리: 1fr 1fr, CTA 2개 + FAQ 3개 카드
+- 내비 72px / 푸터 슬림 / 떠 있는 상담 버튼 아웃라인 알약
+- 반응형 1024(2열→1열) · 768(공급망 1열, 표→카드, 내비 52px) · 560(3D 숨김)
+- 삭제된 섹션의 죽은 CSS 제거: trustbar · console · panel · sample · bo · globe · netlist ·
+  viewer · steps · chips · fcols · utility · askcard · hero-facts 등
+- spec-table.js 빈 상태 문구를 명세에 맞춤 + 빈 상태 요약 문구 표시
+- 영향: base.css 전면 · spec-table.js 빈 상태
+- 확인: 품목 20건 · 문답 후 확정 19 · DOM 훅 7개 · JS 에러 0건 ·
+  모바일 390 가로 넘침 없음 · 업로드 버튼 첫 화면 안(y=419/844)
+
 ## 2026-08-22 · 메인 재설계 1단계 — 섹션 11개 → 5개
 기준 문서: `design_handoff_main_page` 의 **v2 캔버스**.
 README.md 는 v1(어두운 면 26곳) 기준이라 v2 와 충돌하며, v2 = v1 + 검은 면 제거임을 확인하고 v2 를 따랐습니다.

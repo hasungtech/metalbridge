@@ -10,8 +10,8 @@ export function badge(st){
 export function renderSpec(){
   var body=document.getElementById('specBody');
   if(!S.ITEMS.length){
-    body.innerHTML='<div class="empty"><div><div class="big">NO FILE</div>'+
-      '<p style="margin-top:10px">위 문의창에서 자료를 보내주시면<br>판독 결과가 여기에 표시됩니다.</p></div></div>';
+    body.innerHTML='<div class="empty"><p>아직 올린 자료가 없습니다. 위에 파일을 놓으면 이 표가 채워집니다.</p></div>';
+    document.getElementById('specMeta').textContent='자료를 올리면 판독 결과가 표로 정리됩니다.';
     return;
   }
   var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;
