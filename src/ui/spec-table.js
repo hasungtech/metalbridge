@@ -3,7 +3,9 @@ import { S } from '../state.js';
 import { exportRfq } from '../engine/export-rfq.js';
 export function badge(st){
   var cls = st==='확정'?'ok':(st==='조건부'?'warn':'miss');
-  return '<span class="tag '+cls+'">'+st+'</span>';
+  // 엔진의 상태값은 '불가'지만 화면에는 요약 문구와 같은 '확인 필요'로 표시합니다.
+  var label = st==='불가' ? '확인 필요' : st;
+  return '<span class="tag '+cls+'">'+label+'</span>';
 }
 export function renderSpec(){
   var body=document.getElementById('specBody');
