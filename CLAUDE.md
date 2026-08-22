@@ -99,7 +99,21 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 
 - 익명(anon)에게는 **insert만** 허용합니다. select 정책을 열지 마십시오
 - `suppliers` 테이블은 담당자 전용입니다. 공급처 목록이 공개되면 안 됩니다
+- **익명 키는 브라우저 번들에 그대로 들어갑니다.** RLS 와 테이블 제약이 유일한
+  방어선이므로 `with check (true)` 를 쓰지 마십시오. 길이·개수 상한, 상태 고정,
+  실존 `rfq_id` 검사를 겁니다 (`supabase/2026-08-22_harden_anon_insert.sql`)
+- 진행 상태(`rfq.status`)는 담당자만 바꿉니다. 접수 시점은 항상 `접수`
 - 마이그레이션은 `supabase/` 아래에 날짜 파일로 남기십시오
+
+### 엑셀 내려받기 — 받는 사람을 확인하십시오
+
+`engine/export-rfq.js` 는 수신자별로 셋입니다. **고객 파일에 공급처 목록을 넣지 마십시오.**
+
+| 함수 | 받는 사람 | 시트 |
+|---|---|---|
+| `exportRfq()` | 고객 (웹 버튼) | ① 요청서 · ③ 판독명세 · ④ 접수내역 |
+| `exportRfqSupplier()` | 공급처 | ① 요청서 한 장 |
+| `exportRfqInternal()` | 담당자 (백오피스) | 전부 — ② 발송처목록 포함 |
 
 
 ## 문서 위치

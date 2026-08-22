@@ -7,6 +7,26 @@ import { S, MB_MAIL } from '../state.js';
 import { matchSuppliers, catOf } from './suppliers.js';
 import { rfqNo, summaryCounts, buildMailBody } from './export-rfq.js';
 
+/** 스토리지 경로에 쓸 수 있게 파일명을 정리합니다 (경로 이탈·특수문자 방지) */
+function safeName(name) {
+  return String(name)
+    .replace(/[\\/]/g, '_')          // 경로 구분자 제거
+    .replace(/[^\w.\-가-힣ㄱ-ㅎㅏ-ㅣ ]/g, '_')
+    .replace(/_{2,}/g, '_')
+    .slice(-120) || 'file';
+}
+
+/** 접수 id 를 클라이언트에서 만듭니다.
+ *  INSERT ... RETURNING 은 SELECT 권한과 SELECT 정책을 둘 다 요구합니다.
+ *  익명에게 조회를 열지 않으려면 id 를 미리 정해 되돌려받지 않는 편이 맞습니다. */
+function newId() {
+  if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 export async function submitRfq() {
   const no = rfqNo();
   const c = summaryCounts();
@@ -14,12 +34,15 @@ export async function submitRfq() {
   if (!hasSupabase) return { mode: 'mail', no, run: mailFallback };
 
   try {
-    // 1. 헤더
-    const { data: rfq, error: e1 } = await supabase
+    // 1. 헤더 — id 를 직접 정해 되돌려받지 않습니다 (익명 조회 권한 불필요)
+    const rfqId = newId();
+    const { error: e1 } = await supabase
       .from('rfq')
       .insert({
+        id: rfqId,
         rfq_no: no,
-        status: c.no > 0 ? '확인중' : '발송준비',
+        // 진행 상태는 담당자가 정합니다. 접수 시점은 항상 '접수'
+        status: '접수',
         contact: S.ANS.contact || null,
         due: S.ANS.due || null,
         place: S.ANS.place || null,
@@ -27,11 +50,8 @@ export async function submitRfq() {
         extra: S.ANS.extra || S.ANS.memo || null,
         item_count: S.ITEMS.length,
         sendable: c.ok,
-      })
-      .select('id')
-      .single();
+      });
     if (e1) throw e1;
-    const rfqId = rfq.id;
 
     // 2. 품목
     if (S.ITEMS.length) {
@@ -77,7 +97,7 @@ export async function submitRfq() {
 
     // 5. 첨부 파일 업로드
     for (const f of S.RAWFILES) {
-      const path = `${no}/${Date.now()}_${f.name}`;
+      const path = `${no}/${Date.now()}_${safeName(f.name)}`;
       const { error: eUp } = await supabase.storage.from('rfq-files').upload(path, f);
       if (eUp) continue;
       await supabase.from('rfq_files').insert({
