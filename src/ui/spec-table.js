@@ -96,7 +96,9 @@ export function renderSpec(){
     foot.hidden = false;
     var ready = document.getElementById('railReady');
     if(ready) ready.textContent = '확정 '+c.확정+'건은 지금 상태로 공급망에 보낼 수 있습니다.';
-    var dl = document.getElementById('dlRfqRail');
-    if(dl && !dl.dataset.on){ dl.dataset.on='1'; dl.addEventListener('click', exportRfq); }
+    ['dlRfqRail','dlRfqFlow'].forEach(function(id){
+      var dl = document.getElementById(id);
+      if(dl && !dl.dataset.on){ dl.dataset.on='1'; dl.addEventListener('click', exportRfq); }
+    });
   }
 }

@@ -14,23 +14,26 @@ export function syncHero(force){
   var sub=document.getElementById('upSub');
   var bar=document.getElementById('upState');
   var deskNo=document.getElementById('deskNo');
+  var deskSend=document.getElementById('deskSend');
+  var deskState=document.getElementById('deskState');
   var files=S.picked.length, items=S.ITEMS.length, no=S.ANS.__no||'';
   var miss=S.ITEMS.filter(function(i){return i.state==='불가';}).length;
   var st;
   if(force==='drag'){
-    st={c:'hot',g:'\u2193',t:'놓으면 바로 판독합니다',s:'파일을 놓으십시오',bar:'드롭 대기'};
+    st={c:'hot',g:'\u2193',t:'놓으면 바로 판독합니다',s:'파일을 놓으십시오',bar:'드롭 대기',dot:'busy'};
   } else if(force==='reading'){
-    st={c:'reading',g:'\u25D0',t:'자료를 읽고 있습니다',s:'파일 '+files+'건 업로드 완료',bar:'판독'};
+    st={c:'reading',g:'\u25D0',t:'자료를 읽고 있습니다',s:'파일 '+files+'건 업로드 완료',bar:'판독',dot:'busy'};
   } else if(S.SENT||S.MODE==='done'){
-    st={c:'done',g:'\u2713',t:'요청서가 준비되었습니다',s:'품목 '+items+'건',bar:'1차 발송 완료'};
+    st={c:'done',g:'\u2713',t:'요청서가 준비되었습니다',s:'품목 '+items+'건',bar:'1차 발송 완료',dot:'live'};
   } else if((S.MODE==='qa'||S.MODE==='extra')&&S.qQueue&&S.qQueue.length){
     var n=Math.min(S.qPos+1,S.qQueue.length);
-    st={c:'done',g:'\u2713',t:'확인 문답 '+n+' / '+S.qQueue.length,s:'답하시면 오른쪽 표가 바로 갱신됩니다',bar:'문답 진행'};
+    st={c:'done',g:'\u2713',t:'확인 문답 '+n+' / '+S.qQueue.length,s:'답하시면 오른쪽 표가 바로 갱신됩니다',
+        bar:'문답 진행',dot:'busy'};
   } else if(items){
     st={c:'done',g:'\u2713',t:'판독을 마쳤습니다',s:'파일 '+files+'건',
-        bar:miss?('확인 필요 '+miss+'건'):'판독 완료'};
+        bar:miss?('확인 필요 '+miss+'건'):'판독 완료',dot:miss?'busy':'live'};
   } else {
-    st={c:'',g:'+',t:'여기에 도면·BOM을 놓으십시오',s:'클릭해서 선택 · 여러 개 가능',bar:'대기'};
+    st={c:'',g:'+',t:'여기에 도면·BOM을 놓으십시오',s:'클릭해서 선택 · 여러 개 가능',bar:'대기',dot:''};
   }
   drop.classList.remove('hot','reading','done');
   if(st.c) drop.classList.add(st.c);
@@ -39,6 +42,11 @@ export function syncHero(force){
   if(sub) sub.textContent=st.s;
   if(bar) bar.textContent=st.bar;
   if(deskNo) deskNo.textContent = no ? ('접수번호 '+no) : '접수번호 미발급';
+  if(deskState){ deskState.classList.remove('live','busy'); if(st.dot) deskState.classList.add(st.dot); }
+  if(deskSend){
+    var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;
+    deskSend.textContent = items ? ('확정 '+ok+'건 발송 대상') : '';
+  }
 }
 
 export function initMisc(){

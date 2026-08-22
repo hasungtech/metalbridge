@@ -60,6 +60,7 @@ export function initScene(){
   const cv = document.getElementById('globeCanvas');
   if(!cv) return;
   const labelBox = document.getElementById('globeLabels');
+  const meta = document.getElementById('globeMeta');
   const css = getComputedStyle(document.documentElement);
   const tok = n => css.getPropertyValue(n).trim() || '#999';
   const C = { line:tok('--stone'), grid:tok('--hairline-soft'), rim:tok('--hairline'),
@@ -121,6 +122,7 @@ export function initScene(){
       }
       // rot 이 화면 중심 경도가 되도록 90° 보정 (명세: 86~132° 왕복이면 네 도시가 항상 보임)
       const a = -(rot + 90) * D2R, cos = Math.cos(a), sin = Math.sin(a);
+      if(meta) meta.textContent = 'ORTHOGRAPHIC · LON ' + Math.round(((rot % 360) + 360) % 360);
 
       ctx.strokeStyle = C.rim; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.stroke();

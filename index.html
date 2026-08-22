@@ -22,6 +22,7 @@
 <header class="deskbar"><div class="deskbar-in">
   <span class="logo">METAL BRIDGE<span class="dot">.</span></span>
   <span class="deskbar-no mono" id="deskNo">접수번호 미발급</span>
+  <span class="deskbar-send mono" id="deskSend"></span>
   <span class="deskbar-state" id="deskState"><i></i><span id="upState">대기</span></span>
 </div></header>
 
@@ -100,13 +101,18 @@
     <div class="globe-stage">
       <canvas id="globeCanvas"></canvas>
       <div class="globe-labels" id="globeLabels"></div>
+      <span class="globe-meta mono" id="globeMeta">ORTHOGRAPHIC · LON 108</span>
+      <span class="globe-cap mono">SUPPLY ROUTES</span>
     </div>
     <div class="zones" id="zones"></div>
   </div>
   <div class="flow-notes rv">
-    <p>사양 일치도 상위 8곳에 1차 우선 발송</p>
-    <p>회신은 단가·납기·성적서 조건을 한 장의 비교표로</p>
-    <p>도면 원본은 고객 승인 없이 나가지 않습니다</p>
+    <div><span class="n mono">01</span><p>1차는 사양 일치도가 높은 공급처부터. 회신이 오는 대로 2차로 넓힙니다.</p></div>
+    <div><span class="n mono">02</span><p>회신은 한 장의 비교표로 정리해 돌려드립니다. 단가는 공급처가 냅니다.</p></div>
+    <div><span class="n mono">03</span><p>공급처에는 견적에 필요한 사양만 전달합니다. 원본 도면은 승인 없이 나가지 않습니다.</p></div>
+  </div>
+  <div class="flow-cta rv">
+    <button class="btn btn-outline" id="dlRfqFlow" type="button">요청서 내려받기</button>
   </div>
 </div></section>
 

@@ -2,6 +2,20 @@
 
 형식: `날짜 · 무엇을 · 왜 · 영향 범위`
 
+## 2026-08-22 · v4 TF 검토 11건 대조 — 누락분 4건 보강
+v4 시안의 TF REVIEW 11건을 구현과 하나씩 대조했습니다. 7건은 이미 반영, 4건이 빠져 있었습니다.
+
+- TF 3 (상단 바 상태 상시 노출) — 점 색이 상태를 따라가지 않던 것을 수정
+  대기 --stone / 드래그·판독·문답 --molten(점멸) / 판독 완료·발송 --success
+- TF 3 — 상단 바에 `확정 N건 발송 대상` 추가 (시안 표기)
+- TF 4 (모바일 터치 최소 44px) — 칩·버튼이 약 33px 이던 것을 44px 로.
+  대상: .askchips button · .fchip · .askinput .go · .askinput .ic · .btn
+- 지구본 오버레이 `SUPPLY ROUTES` · `ORTHOGRAPHIC · LON nnn` (경도 실시간 표시)
+- 화면 2 하단 3줄에 01/02/03 번호, 모바일에서 `요청서 내려받기` 풀폭 버튼 노출
+- 영향: index.html · base.css · misc.js · scene3d.js · spec-table.js
+- 확인: 상태 점 전이 3단계(회색→파랑→초록) · 모바일 44px 미만 터치 요소 0건 ·
+  경도 표시 동작 · JS 에러 0건
+
 ## 2026-08-22 · v4 재설계 — 5섹션 랜딩 → 3화면 작업 도구
 `design_handoff_v4/README.md` 기준. v1 인수 문서를 대체합니다.
 

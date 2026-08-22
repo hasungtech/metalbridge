@@ -42,7 +42,13 @@ input,textarea,select{font-family:inherit}
 .deskbar-state{margin-left:auto;display:flex;align-items:center;gap:var(--sm);
   font-size:13px;color:var(--mute)}
 .deskbar-state i{width:8px;height:8px;border-radius:50%;background:var(--stone);flex:none}
+.deskbar-state.live{color:var(--success)}
 .deskbar-state.live i{background:var(--success)}
+.deskbar-state.busy{color:var(--molten)}
+.deskbar-state.busy i{background:var(--molten);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.deskbar-send{font-size:11px;color:var(--mute);letter-spacing:.06em}
+.deskbar-send:empty{display:none}
 
 /* ── 화면 1 — 전체화면 문의창 ── */
 .desk{height:calc(100vh - 64px);min-height:600px;border-bottom:1px solid var(--hairline);overflow:hidden}
@@ -175,6 +181,9 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .glabel.dir-up-left{transform:translate(-100%,-100%);padding:0 10px 8px 0;text-align:right}
 .glabel.dir-down-left{transform:translate(-100%,0);padding:8px 10px 0 0;text-align:right}
 .glabel.dir-right{transform:translate(0,-50%);padding-left:12px}
+.globe-meta,.globe-cap{position:absolute;font-size:10px;letter-spacing:.08em;color:var(--mute);pointer-events:none}
+.globe-meta{left:16px;bottom:14px}
+.globe-cap{right:16px;top:14px}
 
 .zones{border:1px solid var(--hairline)}
 .zone{padding:18px 20px;border-bottom:1px solid var(--hairline);
@@ -191,7 +200,11 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .zone-meta{margin:2px 0 0;font-size:11px;color:var(--stone);letter-spacing:.03em}
 .flow-notes{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--xl);margin-top:var(--xl);
   border-top:1px solid var(--hairline);padding-top:var(--lg)}
+.flow-notes>div{display:flex;gap:var(--md);align-items:baseline}
+.flow-notes .n{font-size:11px;color:var(--stone);letter-spacing:.08em;flex:none}
 .flow-notes p{margin:0;font-size:13px;color:var(--mute);word-break:keep-all}
+.flow-cta{display:none;margin-top:var(--lg)}
+.flow-cta .btn{width:100%}
 
 /* ── 화면 3 — 회사 소개 ── */
 .about-h{font-family:'Anton',sans-serif;font-size:48px;letter-spacing:.03em;margin:var(--md) 0 var(--xl)}
@@ -284,6 +297,13 @@ footer{padding:var(--xl) 0;border-bottom:0}
   .donebox-act{margin-left:0}
   .rail{max-height:230px}
   .rail-h{padding:14px 20px 12px}
+  /* TF 검토 4 — 터치 영역 최소 44px */
+  .askchips button,.fchip{min-height:44px;padding-top:0;padding-bottom:0;
+    display:inline-flex;align-items:center;font-size:14px}
+  .askinput .go,.btn{min-height:44px}
+  .askinput .ic{width:44px;height:44px}
+  .zone{padding:16px 20px}
+  .flow-cta{display:block}
   .rail-b .card{padding:14px 20px}
   .card-grid{grid-template-columns:1fr}
   .rail-f{padding:12px 20px}
