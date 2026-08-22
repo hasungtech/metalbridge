@@ -170,7 +170,7 @@ export function initScene(){
     requestAnimationFrame(frame);
   }
 
-  /* 라벨 오버레이 — 노드마다 방향이 달라야 부산·오사카가 겹치지 않습니다 */
+  /* 라벨 오버레이 — 노드마다 방향이 달라야 한국·일본이 겹치지 않습니다 */
   if(labelBox){
     labelBox.innerHTML = ZONES.map(z =>
       '<span class="glabel dir-'+z.dir+'"><b>'+z.en+'</b><i>후보 '+supplierCount(z.ko)+'</i></span>').join('');
