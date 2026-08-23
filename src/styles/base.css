@@ -57,8 +57,9 @@ input,textarea,select{font-family:inherit}
 /* 언어 전환 — 알약 하나에 4칸. 파란색을 쓰지 않고 선택만 반전시킵니다 */
 .langsw{display:flex;flex:none;border:1px solid var(--hairline);
   border-radius:var(--pill);overflow:hidden}
-.langsw button{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
-  padding:5px 9px;border:0;border-right:1px solid var(--hairline);background:none;
+/* 한 글자(한·日·中)와 두 글자(EN)가 섞이므로 최소 폭을 맞춰 칸이 들쭉날쭉하지 않게 합니다 */
+.langsw button{font-size:12px;letter-spacing:.02em;min-width:32px;
+  padding:5px 8px;border:0;border-right:1px solid var(--hairline);background:none;
   color:var(--mute);cursor:pointer;line-height:1.4}
 .langsw button:last-child{border-right:0}
 .langsw button[aria-pressed="true"]{background:var(--ink);color:var(--canvas)}
@@ -359,7 +360,7 @@ html[lang="ja"] .card-issues, html[lang="zh"] .card-issues{ word-break:normal }
      중국어 CTA(发起询价)가 가장 넓어 여기에 맞춰 여백을 줄였습니다. */
   .langsw{margin-left:auto}
   .deskbar-cta{margin-left:var(--sm);padding:8px 14px;font-size:12px;white-space:nowrap}
-  .langsw button{padding:5px 5px;font-size:10px;letter-spacing:.01em}
+  .langsw button{padding:5px 6px;font-size:11px;min-width:28px}
   .deskbar-in{gap:var(--sm)}
   .logo{min-width:0;overflow:hidden;text-overflow:ellipsis}
   .logo{font-size:15px}

@@ -15,11 +15,15 @@ import ja from './ja.js';
 import zh from './zh.js';
 
 const DICT = { ko, en, ja, zh };
+/* 버튼에는 모국어 표기를 씁니다. 중국 구매담당자에게 `ZH` 는 낯선 코드지만
+   `中` 은 바로 읽힙니다. 코드(`k`)는 ISO 639-1 언어 코드 그대로여야 합니다 —
+   `navigator.language` 와 `<html lang>` 이 쓰는 값이고, `cn` 은 국가 코드라
+   언어 자리에 넣으면 브라우저·검색엔진이 알아듣지 못합니다. */
 export const LANGS = [
-  { k: 'ko', short: 'KO', name: '한국어' },
+  { k: 'ko', short: '한', name: '한국어' },
   { k: 'en', short: 'EN', name: 'English' },
-  { k: 'ja', short: 'JA', name: '日本語' },
-  { k: 'zh', short: 'ZH', name: '中文' },
+  { k: 'ja', short: '日', name: '日本語' },
+  { k: 'zh', short: '中', name: '中文' },
 ];
 const KEY = 'mb.lang';
 const listeners = [];
@@ -104,8 +108,9 @@ export function initLang() {
   var sw = document.getElementById('langSw');
   if (sw) {
     sw.innerHTML = LANGS.map(function (l) {
-      return '<button type="button" class="mono" data-l="' + l.k +
-        '" lang="' + l.k + '" title="' + l.name + '" aria-pressed="false">' + l.short + '</button>';
+      return '<button type="button" data-l="' + l.k + '" lang="' + l.k +
+        '" title="' + l.name + '" aria-label="' + l.name + '" aria-pressed="false">' +
+        l.short + '</button>';
     }).join('');
     sw.addEventListener('click', function (e) {
       var b = e.target.closest('button');
