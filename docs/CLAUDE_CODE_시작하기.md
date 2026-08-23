@@ -58,7 +58,7 @@ Supabase Edge Function 으로 만들고, 배포 방법을 README 에 적어줘.
 
 ```
 design/TASKS.md 의 3번을 진행해줘.
-src/engine/suppliers.js 의 SUPPLIER_MASTER 62곳을 suppliers 테이블 시드 SQL로 만들고,
+src/engine/suppliers.js 의 SUPPLIER_MASTER 74곳을 suppliers 테이블 시드 SQL로 만들고,
 백오피스에서 추가·수정·비활성화할 수 있게 해줘.
 
 주의: 익명 사용자가 공급처 목록을 조회할 수 없어야 해.

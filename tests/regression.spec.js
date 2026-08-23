@@ -260,6 +260,86 @@ test('소개 화면에 적은 소재는 모두 판별되고 공급처가 있다'
   }
 });
 
+test('소개 화면에 적은 형상은 모두 공급처가 있다', async ({ page }) => {
+  await page.goto('/');
+
+  // '절단 가공품' 은 형상이 아니라 가공 범위라 마스터의 sh 에 없습니다
+  const line = await page.locator('.intro-facts dd').nth(1).innerText();
+  const shapes = line.split('·').map((w) => w.trim()).filter((w) => w && !/절단/.test(w));
+  expect(shapes.length).toBeGreaterThanOrEqual(5);
+
+  const counts = await page.evaluate(async (list) => {
+    const m = await import('/src/engine/suppliers.js');
+    return list.map((sh) => ({
+      sh, n: m.SUPPLIER_MASTER.filter((s) => s.sh.indexOf(sh) >= 0).length,
+    }));
+  }, shapes);
+  for (const c of counts) expect(c.n, `${c.sh} 취급 공급처 없음`).toBeGreaterThan(0);
+});
+
+test('단조를 고르면 개략 치수와 단중을 묻는다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  // 소재 이름만 적으면 품목이 안 잡혀 대화로 채웁니다
+  await page.fill('#askIn', '스테인리스가 필요합니다');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(600);
+
+  await answer(page, 'buyer@example.com');
+  await answer(page, '스테인리스');
+  await answer(page, 'STS316L');
+
+  await expect(page.locator('.abub.sys').last()).toContainText('어떤 형태로');
+  const shapes = await page.$$eval('#askChips button', (els) => els.map((e) => e.textContent.trim()));
+  expect(shapes).toContain('단조');
+  expect(shapes).toContain('주물');
+  await answer(page, '단조');
+
+  // 단조·주물은 도면 발주입니다 — 판재처럼 두께를 물으면 답이 안 나옵니다
+  await expect(page.locator('.abub.sys').last()).toContainText('개략');
+  await answer(page, 'Ø800 × H300');
+  await expect(page.locator('.abub.sys').last()).toContainText('중량');
+  await answer(page, '120');
+  await expect(page.locator('.abub.sys').last()).toContainText('얼마나 필요하십니까');
+  await answer(page, '4');
+  await answer(page, '개(EA)');
+
+  const card = await page.textContent('#specBody .card');
+  expect(card).toContain('단조');
+  expect(card).toContain('단중 120kg');
+
+  // 단조를 취급하는 공급처가 실제로 붙어야 합니다
+  const n = await page.evaluate(async () => {
+    const m = await import('/src/engine/suppliers.js');
+    return m.matchSuppliers().filter((x) => x.sp.sh.indexOf('단조') >= 0).length;
+  });
+  expect(n).toBeGreaterThan(0);
+});
+
+test('밀시트는 답이 없어도 요청서에 EN 10204 3.1 로 들어간다', async ({ page }) => {
+  await page.goto('/');
+
+  // 성적서 문항에 '불필요' 가 남아 있으면 소개 화면의 약속과 어긋납니다
+  const opts = await page.evaluate(async () => {
+    const d = await import('/src/i18n/ko.js');
+    return d.default ? d.default.q.mtcO : d.ko.q.mtcO;
+  });
+  expect(opts).not.toContain('불필요');
+
+  const spec = await page.evaluate(async () => {
+    const e = await import('/src/engine/export-rfq.js');
+    const s = await import('/src/state.js');
+    const out = {};
+    s.S.ANS.mtc = '';            out.empty = e.mtcSpec();
+    s.S.ANS.mtc = '모르겠습니다'; out.unsure = e.mtcSpec();
+    s.S.ANS.mtc = '3.2 입회검사'; out.chosen = e.mtcSpec();
+    return out;
+  });
+  expect(spec.empty).toContain('EN 10204 3.1');
+  expect(spec.unsure).toContain('EN 10204 3.1');
+  expect(spec.chosen).toBe('3.2 입회검사');
+});
+
 test('취급 · 형상 · 원칙 세 줄이 4개 언어로 나온다', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('.intro-facts > div')).toHaveCount(3);

@@ -7,6 +7,8 @@ var SHAPES = [
   {re:/\bSECTION\s*U\b|CHANNEL|채널|ㄷ형강/i, name:'채널', needLen:true},
   {re:/\bBEAM\b|\bHE\s?\d{3}|H\s?형강|H-?BEAM/i, name:'H형강', needLen:true},
   {re:/\bPIPE\b|파이프/i, name:'파이프', needLen:true},
+  {re:/FORG(E|ED|ING)|자유단조|형단조|단조/i, name:'단조', needLen:false},
+  {re:/CAST(ING|INGS)?\b|주물|주강|주조품/i, name:'주물', needLen:false},
   {re:/\bRING\b|\b링\b/i, name:'링', needLen:false},
   {re:/\bRB\b|ROUND\s*BAR|\bBAR\b|환봉/i, name:'환봉', needLen:true},
   {re:/\bPLATE\b|판재|후판/i, name:'판재', needLen:false},

@@ -8,7 +8,7 @@
 import { supabase, hasSupabase } from '../lib/supabase.js';
 import { S } from '../state.js';
 import { matchSuppliers, catOf } from './suppliers.js';
-import { rfqNo, summaryCounts } from './export-rfq.js';
+import { rfqNo, summaryCounts, mtcSpec } from './export-rfq.js';
 
 /** 스토리지 경로에 쓸 수 있게 파일명을 정리합니다 (경로 이탈·특수문자 방지) */
 function safeName(name) {
@@ -56,7 +56,8 @@ export async function submitRfq() {
         contact: S.ANS.contact || null,
         due: S.ANS.due || null,
         place: S.ANS.place || null,
-        mtc: S.ANS.mtc || null,
+        // 밀시트는 기본이라 답이 없어도 빠지지 않습니다 (mtcSpec)
+        mtc: mtcSpec(),
         // 견적 조건 — 공급처가 되묻지 않도록 답변을 그대로 넘깁니다
         usage: S.ANS.usage || null,
         finish: S.ANS.finish || null,

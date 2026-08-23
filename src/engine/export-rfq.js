@@ -9,12 +9,18 @@
  */
 import * as XLSX from 'xlsx';
 import { S, MB_MAIL } from '../state.js';
-import { matchSuppliers, coverage, catOf } from './suppliers.js';
+import { matchSuppliers, coverage, catOf, mtcOf } from './suppliers.js';
 export function rfqNo(){
   if(!S.ANS.__no) S.ANS.__no='MB-'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'-'+String(Math.floor(Math.random()*899)+100);
   return S.ANS.__no;
 }
 export function pick(k){ return S.ANS[k]||''; }
+/** 성적서 등급. 밀시트(EN 10204 3.1)는 기본이라 답이 없거나 모르셔도 빠지지 않습니다 —
+ *  소개 화면의 "밀시트는 소재와 함께 나갑니다"가 요청서에서 지켜지는 자리입니다. */
+export function mtcSpec(){
+  var v=pick('mtc');
+  return (!v || v==='모르겠습니다') ? '밀시트 (EN 10204 3.1)' : v;
+}
 export function summaryCounts(){
   var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;
   var cond=S.ITEMS.filter(function(i){return i.state==='조건부';}).length;
@@ -39,7 +45,7 @@ function buildBook(mode){
   var rCond=Q.length; Q.push(['■ 요청 조건']);
   Q.push(['희망 납기',pick('due')||'협의','','인도 장소',pick('place')||'협의','','인도 조건',pick('incoterm')||'협의']);
   Q.push(['용도',pick('usage')||'미기재','','표면·마감',pick('finish')||'협의','','열처리·조질',pick('heat')||'지정 없음']);
-  Q.push(['가공 범위',pick('fab')||'협의','','공차',pick('tol')||'일반 공차','','성적서',pick('mtc')||'협의']);
+  Q.push(['가공 범위',pick('fab')||'협의','','공차',pick('tol')||'일반 공차','','성적서',mtcSpec()]);
   Q.push(['원산지',pick('origin')||'무관','','발주 형태',pick('repeat')||'미정','','대체 강종','동등 이상 제안 가능']);
   Q.push(['통화',  'KRW 또는 USD','','결제 조건','협의','','','']);
   if(pick('extra')) Q.push(['추가 요청',pick('extra')]);
@@ -62,7 +68,8 @@ function buildBook(mode){
   Q.push(['2. 전량 대응이 어려우신 경우 가능한 품목만 기재해 주셔도 됩니다.']);
   Q.push(['3. 동등 이상 강종으로 대체 제안이 가능하시면 대체 제안란에 기재해 주십시오.']);
   Q.push(['4. 위 요청 조건(표면·열처리·가공·공차·성적서·원산지·인도 조건)을 전제로 산출해 주십시오.']);
-  Q.push(['5. 회신 기한: '+fmt(valid)+' · 회신처: '+MB_MAIL]);
+  Q.push(['5. 밀시트(MTC)는 전 품목 필수입니다. '+mtcSpec()+' 을(를) 소재와 함께 보내주십시오 — 원제조사 발행분 사본도 됩니다.']);
+  Q.push(['6. 회신 기한: '+fmt(valid)+' · 회신처: '+MB_MAIL]);
   var wsQ=XLSX.utils.aoa_to_sheet(Q);
   wsQ['!cols']=[{wch:5},{wch:26},{wch:13},{wch:24},{wch:8},{wch:6},
                 {wch:12},{wch:12},{wch:12},{wch:10},{wch:10},{wch:16},{wch:26}];
@@ -78,10 +85,10 @@ function buildBook(mode){
   var E=[['견적 요청 발송처 목록'],['요청번호',no,'','후보 공급처',MS.length+'곳'],
          ['※ 판독된 소재·형상에 따라 자동 선정된 실존 제조사·유통사입니다. 현재 거래 이력은 없으며 접촉 대상 후보입니다.'],[],
          ['No','적합도','국가','지역','유형','공급처','취급 소재','취급 형상',
-          '최소수량','리드타임','대응 품목','거래 상태','발송','발송일','회신일','회신 단가','납기','비고']];
+          '최소수량','리드타임','밀시트','대응 품목','거래 상태','발송','발송일','회신일','회신 단가','납기','비고']];
   MS.forEach(function(m,k){
     E.push([k+1, m.score+'%', m.sp.c, m.sp.r, m.sp.t, m.sp.n,
-            m.cats.join(' · '), m.sp.sh.join(' · '), m.sp.moq, m.sp.lead,
+            m.cats.join(' · '), m.sp.sh.join(' · '), m.sp.moq, m.sp.lead, mtcOf(m.sp),
             m.items.length>6 ? m.items.slice(0,6).join(', ')+' 외 '+(m.items.length-6)+'건' : m.items.join(', '),
             '후보(미거래)', (k<8?'1차':'2차'),'','','','', m.sp.note]);
   });
@@ -91,9 +98,9 @@ function buildBook(mode){
   E.push(['발송 원칙','적합도 상위 8곳을 1차 발송 · 회신 상황을 보아 2차 발송']);
   var wsE=XLSX.utils.aoa_to_sheet(E);
   wsE['!cols']=[{wch:5},{wch:8},{wch:9},{wch:12},{wch:10},{wch:28},{wch:18},{wch:26},
-                {wch:9},{wch:10},{wch:22},{wch:12},{wch:7},{wch:11},{wch:11},{wch:13},{wch:10},{wch:24}];
-  wsE['!merges']=[{s:{r:0,c:0},e:{r:0,c:17}},{s:{r:2,c:0},e:{r:2,c:17}}];
-  wsE['!autofilter']={ref:'A5:R'+(5+MS.length)};
+                {wch:9},{wch:10},{wch:15},{wch:22},{wch:12},{wch:7},{wch:11},{wch:11},{wch:13},{wch:10},{wch:24}];
+  wsE['!merges']=[{s:{r:0,c:0},e:{r:0,c:18}},{s:{r:2,c:0},e:{r:2,c:18}}];
+  wsE['!autofilter']={ref:'A5:S'+(5+MS.length)};
   XLSX.utils.book_append_sheet(wb,wsE,'② 발송처목록');
   }
 
@@ -120,7 +127,7 @@ function buildBook(mode){
          ['용도',pick('usage')||'-','','표면·마감',pick('finish')||'-'],
          ['열처리·조질',pick('heat')||'-','','가공 범위',pick('fab')||'-'],
          ['공차',pick('tol')||'-','','원산지',pick('origin')||'-'],
-         ['성적서',pick('mtc'),'','추가 요청',pick('extra')||pick('memo')||'-'],
+         ['성적서',mtcSpec(),'','추가 요청',pick('extra')||pick('memo')||'-'],
          [],
          ['■ 판독 요약'],
          ['총 품목',c.total+'건','','발송 가능',c.ok+'건'],
