@@ -245,13 +245,12 @@ export default {
   flow: {
     step: '02 / How it moves',
     h: 'One request, four countries',
-    lead: 'We score suppliers on how well they match the specification and send to the best eight first. Confirmed items go in the first round; anything that needs checking follows in the second, once the questions are answered. <span class="flow-note">The figures are <b>candidate suppliers</b> we have mapped by material — mills, rolling companies and stockists alike. They are not accounts we have traded with.</span>',
+    lead: 'We score suppliers on how well they match the specification and send to the best eight first. Confirmed items go in the first round; anything that needs checking follows in the second, once the questions are answered. <span class="flow-note">The figures are our own estimate of the sourcing pool in each country — <b>mills, distributors and surplus-stock holders</b>. We pick the ones that match your specification; they are not accounts we have traded with.</span>',
     n1: 'The first round goes to the closest specification matches. We widen to the second round as replies arrive.',
     n2: 'Replies come back to you as a single comparison sheet. Suppliers set the price, not us.',
     n3: 'Suppliers only receive the specification needed to quote. Original drawings do not leave without your approval.',
-    unit: '',
+    unit: ' companies',
     batch1: 'First round', batch2: 'Second round',
-    candidate: '{n} suppliers',
   },
 
   zone: {
