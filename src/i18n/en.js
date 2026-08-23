@@ -274,7 +274,7 @@ export default {
     upload: 'Upload a file',
   },
 
-  footer: { terms: 'Terms', privacy: 'Privacy', nda: 'Confidentiality', region: 'Republic of Korea' },
+  footer: { terms: 'Terms', privacy: 'Privacy', nda: 'Confidentiality', brand: 'Brand', region: 'Republic of Korea' },
 
   ai: {
     fab: 'Ask AI',

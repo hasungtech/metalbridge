@@ -273,7 +273,7 @@ export default {
     upload: 'ファイルをアップロード',
   },
 
-  footer: { terms: '利用規約', privacy: 'プライバシーポリシー', nda: '秘密保持方針', region: '大韓民国' },
+  footer: { terms: '利用規約', privacy: 'プライバシーポリシー', nda: '秘密保持方針', brand: 'ブランド', region: '大韓民国' },
 
   ai: {
     fab: 'AI相談',

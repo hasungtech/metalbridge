@@ -273,7 +273,7 @@ export default {
     upload: '파일 올리기',
   },
 
-  footer: { terms: '이용약관', privacy: '개인정보처리방침', nda: '비밀유지 정책', region: '대한민국' },
+  footer: { terms: '이용약관', privacy: '개인정보처리방침', nda: '비밀유지 정책', brand: '브랜드', region: '대한민국' },
 
   ai: {
     fab: 'AI 상담',

@@ -273,7 +273,7 @@ export default {
     upload: '上传文件',
   },
 
-  footer: { terms: '服务条款', privacy: '隐私政策', nda: '保密政策', region: '大韩民国' },
+  footer: { terms: '服务条款', privacy: '隐私政策', nda: '保密政策', brand: '品牌', region: '大韩民国' },
 
   ai: {
     fab: 'AI 咨询',

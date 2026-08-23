@@ -94,7 +94,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 - 일본어·중국어는 어절 경계가 없어 `word-break:keep-all` 이 줄바꿈을 막습니다.
   `html[lang="ja"]` · `html[lang="zh"]` 에서 `word-break:normal` 로 되돌립니다
 - 회귀 테스트는 `playwright.config.js` 의 `locale: 'ko-KR'` 로 언어를 고정합니다
-- **`/admin` · `/privacy` · `/terms` 는 한국어 전용입니다.** 백오피스는 담당자용이고
+- **`/admin` · `/privacy` · `/terms` · `/brand` 는 한국어 전용입니다.** 백오피스는 담당자용이고
   법정 고지는 국내법 문서라 번역본에 법적 효력을 주기 어렵습니다
 
 ## 문답 — 답변만으로 견적이 나와야 합니다
@@ -200,6 +200,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 | `/` | `index.html` → `src/main.js` | 방문자 |
 | `/admin` | `admin.html` → `src/admin/main.js` | 담당자 (Supabase Auth) |
 | `/privacy` `/terms` | `privacy.html` `terms.html` → `src/legal/main.js` | 법정 고지 (정적) |
+| `/brand` | `brand.html` → `src/brand/main.js` | 브랜드 리소스 — 외부 협업자용 공개 발췌 (한국어 전용) |
 
 Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 **백오피스는 xlsx·pdf 청크를 받지 않습니다** — 무거운 파서를 담당자 화면에 끌어오지 마십시오.
@@ -249,6 +250,7 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 - [ ] 접수 알림 (Edge Function → 메일 또는 슬랙)
 - [ ] 로고 선정 (`design_handoff_v4/METAL BRIDGE 로고 시안.dc.html` 10안) → 파비콘·앱 아이콘 교체
 - [ ] 다국어 문안 원어민 검수 (영어·일본어·중국어)
+- [ ] `/brand` 에 로고 파일 묶음 배포 (심벌 확정 후 — 지금은 규정만 공개)
 - [ ] 외국어 방문자용 법정 고지 — 지금은 `/privacy` `/terms` 가 한국어뿐입니다
 - [ ] 회사 정보 확정 → `privacy.html` · `terms.html` 의 `.todo` 표시 5곳 채우기
       (통신판매업 신고번호 · 대표 전화번호 2곳 · 시행일 2곳)

@@ -360,3 +360,17 @@ test('취급 · 형상 · 원칙 세 줄이 4개 언어로 나온다', async ({ 
     }
   }
 });
+
+test('브랜드 페이지 — 로고 규정과 색이 뜬다', async ({ page }) => {
+  await page.goto('/brand.html');
+  await expect(page.locator('.logo-tile')).toHaveCount(2);
+  await expect(page.locator('.sw')).toHaveCount(6);
+  // 페이지의 HEX 는 토큰과 어긋나면 안 됩니다 — 몰튼 블루로 확인합니다
+  const molten = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--molten').trim());
+  const chip = await page.locator('.sw[data-hex="#0F62FE"] .mono').innerText();
+  expect(chip.toLowerCase()).toBe(molten.toLowerCase());
+  // 금지 규정과 용어 표가 있어야 발췌본 구실을 합니다
+  await expect(page.locator('#logo ul li')).toHaveCount(5);
+  await expect(page.locator('#term table tr')).toHaveCount(6);
+});
