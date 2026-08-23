@@ -36,31 +36,40 @@ function buildBook(mode){
   Q.push(['수신 (공급처)','','','담당자','','','연락처','']);
   Q.push(['발신','METAL BRIDGE 소싱팀','','연락처',MB_MAIL,'','','']);
   Q.push([]);
-  Q.push(['■ 요청 조건']);
-  Q.push(['희망 납기',pick('due')||'협의','','인도 장소',pick('place')||'협의','','통화 / 인도조건','KRW 또는 USD · 협의']);
-  Q.push(['성적서',pick('mtc')||'협의','','대체 강종','동등 이상 제안 가능','','결제 조건','협의']);
+  var rCond=Q.length; Q.push(['■ 요청 조건']);
+  Q.push(['희망 납기',pick('due')||'협의','','인도 장소',pick('place')||'협의','','인도 조건',pick('incoterm')||'협의']);
+  Q.push(['용도',pick('usage')||'미기재','','표면·마감',pick('finish')||'협의','','열처리·조질',pick('heat')||'지정 없음']);
+  Q.push(['가공 범위',pick('fab')||'협의','','공차',pick('tol')||'일반 공차','','성적서',pick('mtc')||'협의']);
+  Q.push(['원산지',pick('origin')||'무관','','발주 형태',pick('repeat')||'미정','','대체 강종','동등 이상 제안 가능']);
+  Q.push(['통화',  'KRW 또는 USD','','결제 조건','협의','','','']);
   if(pick('extra')) Q.push(['추가 요청',pick('extra')]);
   Q.push([]);
-  Q.push(['■ 견적 요청 품목  ('+sendable.length+'건)']);
+  var rItems=Q.length; Q.push(['■ 견적 요청 품목  ('+sendable.length+'건)']);
   Q.push(['No','재질 / 강종','형상','치수 (mm)','수량','단위',
           '단가','금액','원산지','납기(주)','성적서','대체 제안','비고']);
   sendable.forEach(function(it,k){
-    Q.push([k+1, it.grades.join(' / ')||'(협의)', it.shape, it.dim, it.qty||'', 'EA',
+    Q.push([k+1, it.grades.join(' / ')||'(협의)', it.shape, it.dim, it.qty||'', it.unit||pick('needUnit')||'EA',
             '','','','','','', it.issues.length? '확인 중: '+it.issues.join(' · '):'']);
   });
+  if(!sendable.length){
+    Q.push(['-','(품목 미확정 — 담당자가 고객과 확인 후 다시 보내드립니다)','','','','','','','','','','','']);
+  }
   Q.push([]);
   Q.push(['합계','','','','','','','','','','','','']);
   Q.push([]);
-  Q.push(['■ 회신 안내']);
+  var rNote=Q.length; Q.push(['■ 회신 안내']);
   Q.push(['1. 음영 없는 회신란(단가·금액·원산지·납기·성적서·대체 제안)만 채워 회신해 주십시오.']);
   Q.push(['2. 전량 대응이 어려우신 경우 가능한 품목만 기재해 주셔도 됩니다.']);
   Q.push(['3. 동등 이상 강종으로 대체 제안이 가능하시면 대체 제안란에 기재해 주십시오.']);
-  Q.push(['4. 회신 기한: '+fmt(valid)+' · 회신처: '+MB_MAIL]);
+  Q.push(['4. 위 요청 조건(표면·열처리·가공·공차·성적서·원산지·인도 조건)을 전제로 산출해 주십시오.']);
+  Q.push(['5. 회신 기한: '+fmt(valid)+' · 회신처: '+MB_MAIL]);
   var wsQ=XLSX.utils.aoa_to_sheet(Q);
   wsQ['!cols']=[{wch:5},{wch:26},{wch:13},{wch:24},{wch:8},{wch:6},
                 {wch:12},{wch:12},{wch:12},{wch:10},{wch:10},{wch:16},{wch:26}];
   wsQ['!merges']=[{s:{r:0,c:0},e:{r:0,c:12}},{s:{r:1,c:0},e:{r:1,c:12}},
-                  {s:{r:7,c:0},e:{r:7,c:12}},{s:{r:11,c:0},e:{r:11,c:12}}];
+                  {s:{r:rCond,c:0},e:{r:rCond,c:12}},
+                  {s:{r:rItems,c:0},e:{r:rItems,c:12}},
+                  {s:{r:rNote,c:0},e:{r:rNote,c:12}}];
   XLSX.utils.book_append_sheet(wb,wsQ,'① 견적요청서(발송용)');
   if(mode==='supplier') return { wb:wb, no:no };   // 공급처에는 이 한 장만
 
@@ -107,12 +116,18 @@ function buildBook(mode){
          ['접수일시',new Date().toLocaleString('ko-KR'),'','접수 경로','웹 견적 문의'],
          ['연락처',pick('contact'),'','첨부 자료',S.picked.length+'건'],
          ['희망 납기',pick('due'),'','인도 장소',pick('place')],
+         ['인도 조건',pick('incoterm')||'-','','발주 형태',pick('repeat')||'-'],
+         ['용도',pick('usage')||'-','','표면·마감',pick('finish')||'-'],
+         ['열처리·조질',pick('heat')||'-','','가공 범위',pick('fab')||'-'],
+         ['공차',pick('tol')||'-','','원산지',pick('origin')||'-'],
          ['성적서',pick('mtc'),'','추가 요청',pick('extra')||pick('memo')||'-'],
          [],
          ['■ 판독 요약'],
          ['총 품목',c.total+'건','','발송 가능',c.ok+'건'],
          ['확인 후 가능',c.cond+'건','','추가 확인 필요',c.no+'건'],
-         ['발송 후보',MS.length+'곳','','현재 상태',c.no>0?'확인 중 (일부 발송 가능)':'발송 준비 완료'],
+         ['발송 후보',MS.length+'곳','','현재 상태',
+           !S.ITEMS.length ? '품목 미확정 — 담당자 확인 필요'
+             : (c.no>0?'확인 중 (일부 발송 가능)':'발송 준비 완료')],
          [],
          ['■ 소재별 공급처 확보 현황'],
          ['소재 구분','후보 공급처','국가 분포','국내 공급처']];
@@ -146,27 +161,3 @@ export function exportRfqSupplier(){ save('supplier'); }
 export function exportRfqInternal(){ save('internal'); }
 
 /* ── 담당자 전달 (메일) ── */
-export function buildMailBody(){
-  var no=rfqNo(), c=summaryCounts(), L=[];
-  L.push('[METAL BRIDGE 견적 문의] '+no);
-  L.push('');
-  L.push('연락처: '+pick('contact'));
-  L.push('희망 납기: '+pick('due')+' / 인도 장소: '+pick('place'));
-  L.push('성적서: '+pick('mtc'));
-  if(pick('extra')) L.push('추가 요청: '+pick('extra'));
-  L.push('');
-  L.push('판독 결과: 총 '+c.total+'건 (발송 가능 '+c.ok+' · 확인 후 '+c.cond+' · 확인 필요 '+c.no+')');
-  L.push('');
-  L.push('■ 품목');
-  S.ITEMS.slice(0,15).forEach(function(it){
-    L.push(it.no+'. '+(it.grades.join('/')||'(미기재)')+' | '+it.shape+' | '+it.dim+' | '+(it.qty||'-')+' | '+it.state);
-  });
-  if(S.ITEMS.length>15) L.push('... 외 '+(S.ITEMS.length-15)+'건 (첨부 파일 참조)');
-  L.push('');
-  L.push('■ 확인 내역');
-  S.QLOG.forEach(function(q){ L.push('- '+q.label+': '+q.a); });
-  L.push('');
-  L.push('※ 내려받은 요청서 엑셀 파일을 이 메일에 첨부해 주십시오.');
-  return L.join('\n');
-}
-

@@ -1,11 +1,14 @@
 /**
  * 견적 문의 접수 — Supabase 저장
- * 환경변수가 없으면 메일 앱으로 대체합니다.
+ *
+ * **메일 앱을 열지 않습니다.** 담당자에게 보내는 일은 백오피스에서 합니다.
+ * 저장하지 못하면 실패를 그대로 알리고 다시 누를 수 있게 둡니다 —
+ * 메일 앱으로 넘기면 접수됐는지 아닌지가 흐려집니다.
  */
 import { supabase, hasSupabase } from '../lib/supabase.js';
-import { S, MB_MAIL } from '../state.js';
+import { S } from '../state.js';
 import { matchSuppliers, catOf } from './suppliers.js';
-import { rfqNo, summaryCounts, buildMailBody } from './export-rfq.js';
+import { rfqNo, summaryCounts } from './export-rfq.js';
 
 /** 스토리지 경로에 쓸 수 있게 파일명을 정리합니다 (경로 이탈·특수문자 방지) */
 function safeName(name) {
@@ -14,6 +17,13 @@ function safeName(name) {
     .replace(/[^\w.\-가-힣ㄱ-ㅎㅏ-ㅣ ]/g, '_')
     .replace(/_{2,}/g, '_')
     .slice(-120) || 'file';
+}
+
+/** rfq_items.qty 는 integer 입니다. 대화로 받은 수량은 "20장" 처럼 단위가 붙을 수 있어
+ *  숫자만 남깁니다. 표시용 원문은 품목의 qty·unit 에 그대로 남아 요청서에 나갑니다. */
+function qtyInt(v) {
+  var n = parseInt(String(v == null ? '' : v).replace(/[^0-9]/g, ''), 10);
+  return Number.isFinite(n) && n >= 0 && n <= 1000000 ? n : null;
 }
 
 /** 접수 id 를 클라이언트에서 만듭니다.
@@ -31,7 +41,7 @@ export async function submitRfq() {
   const no = rfqNo();
   const c = summaryCounts();
 
-  if (!hasSupabase) return { mode: 'mail', no, run: mailFallback };
+  if (!hasSupabase) return { mode: 'error', no, reason: 'config' };
 
   try {
     // 1. 헤더 — id 를 직접 정해 되돌려받지 않습니다 (익명 조회 권한 불필요)
@@ -47,6 +57,15 @@ export async function submitRfq() {
         due: S.ANS.due || null,
         place: S.ANS.place || null,
         mtc: S.ANS.mtc || null,
+        // 견적 조건 — 공급처가 되묻지 않도록 답변을 그대로 넘깁니다
+        usage: S.ANS.usage || null,
+        finish: S.ANS.finish || null,
+        heat: S.ANS.heat || null,
+        fab: S.ANS.fab || null,
+        tol: S.ANS.tol || null,
+        origin: S.ANS.origin || null,
+        incoterm: S.ANS.incoterm || null,
+        order_type: S.ANS.repeat || null,
         extra: S.ANS.extra || S.ANS.memo || null,
         item_count: S.ITEMS.length,
         sendable: c.ok,
@@ -64,7 +83,8 @@ export async function submitRfq() {
         category: catOf((it.grades || []).join(' ')),
         shape: it.shape,
         dim: it.dim,
-        qty: it.qty || null,
+        qty: qtyInt(it.qty),
+        unit: it.unit || S.ANS.needUnit || null,
         state: it.state,
         issues: (it.issues || []).join(' · ') || null,
         raw: it.raw,
@@ -110,16 +130,7 @@ export async function submitRfq() {
     S.SENT = true;
     return { mode: 'db', no, id: rfqId };
   } catch (err) {
-    console.warn('Supabase 저장 실패 — 메일로 대체합니다:', err.message);
-    return { mode: 'mail', no, run: mailFallback, error: err.message };
+    console.warn('접수 저장 실패:', err.message);
+    return { mode: 'error', no, reason: 'db', error: err.message };
   }
-}
-
-export function mailFallback() {
-  const no = rfqNo();
-  window.location.href =
-    'mailto:' + MB_MAIL +
-    '?subject=' + encodeURIComponent('[견적문의] ' + no + ' · 품목 ' + S.ITEMS.length + '건') +
-    '&body=' + encodeURIComponent(buildMailBody());
-  S.SENT = true;
 }

@@ -13,7 +13,16 @@ create table if not exists public.rfq (
   company       text,                              -- 고객사 (선택)
   due           text,                              -- 희망 납기
   place         text,                              -- 인도 장소
-  mtc           text,                              -- 성적서 요구
+  mtc           text,                              -- 성적서 요구 (등급 포함)
+  -- 견적 조건 — 공급처가 되묻지 않도록 문답에서 받아 넘깁니다
+  usage         text,                              -- 용도
+  finish        text,                              -- 표면·마감
+  heat          text,                              -- 열처리·조질
+  fab           text,                              -- 가공 범위
+  tol           text,                              -- 공차
+  origin        text,                              -- 원산지 제한
+  incoterm      text,                              -- 인도 조건
+  order_type    text,                              -- 발주 형태 (1회 · 정기)
   extra         text,                              -- 추가 요청
   item_count    int  not null default 0,
   sendable      int  not null default 0,           -- 발송 가능 건수
@@ -33,6 +42,7 @@ create table if not exists public.rfq_items (
   shape       text,        -- 형상
   dim         text,        -- 치수
   qty         int,
+  unit        text,        -- 장 · 본 · kg · 톤
   state       text,        -- 확정 · 조건부 · 불가
   issues      text,        -- 확인 필요 사항
   raw         text         -- 원문
@@ -159,8 +169,9 @@ create policy "staff read rfq files"
 create or replace view public.rfq_board as
 select
   r.id, r.rfq_no, r.created_at, r.status, r.contact, r.company,
-  r.due, r.place, r.item_count, r.sendable,
+  r.due, r.place, r.mtc, r.item_count, r.sendable,
   r.agreed_at, r.marketing_opt_in,
+  r.usage, r.finish, r.heat, r.fab, r.tol, r.origin, r.incoterm, r.order_type,
   (select count(*) from public.rfq_suppliers s where s.rfq_id = r.id) as supplier_count,
   (select count(*) from public.rfq_suppliers s where s.rfq_id = r.id and s.replied_at is not null) as replied_count
 from public.rfq r
