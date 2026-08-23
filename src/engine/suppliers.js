@@ -89,22 +89,24 @@ export const SUPPLIER_MASTER=[
 export function catOf(g){
   var t=(g||'').toUpperCase();
   /* 대화로 받은 소재는 강종이 아니라 분류 이름입니다 ("알루미늄이 필요합니다").
-     강종 표기보다 먼저 봐야 '알루미늄' 이 구조용강으로 떨어지지 않습니다. */
+     강종 표기보다 먼저 봐야 '알루미늄' 이 구조용강으로 떨어지지 않습니다.
+     소개 화면에 적어 둔 낱말(니켈합금·동합금 …)은 여기서 반드시 잡혀야 합니다.
+     표기만 늘리고 판별이 못 따라가면 엉뚱한 공급처에 요청서가 나갑니다. */
   if(/스테인리스|스텐/.test(t)) return '스테인리스';
   if(/알루미늄|두랄루민/.test(t)) return '알루미늄';
-  if(/티타늄|니켈|인코넬|하스텔로이|모넬/.test(t)) return '티타늄·니켈';
-  if(/구리|동합금|황동|청동/.test(t)) return '구리·동합금';
-  if(/공구강|금형강/.test(t)) return '공구강';
-  if(/고장력/.test(t)) return '고장력강';
-  if(/특수강|기계구조/.test(t)) return '특수강';
+  if(/티타늄|티탄|니켈|인코넬|인코로이|하스텔로이|모넬/.test(t)) return '티타늄·니켈';
+  if(/구리|동합금|황동|청동|순동|전기동|무산소동|베릴륨동/.test(t)) return '구리·동합금';
+  if(/공구강|금형강|고속도강/.test(t)) return '공구강';
+  if(/고장력|내마모/.test(t)) return '고장력강';
+  if(/특수강|기계구조|내열강|쾌삭강|조질강|스프링강|베어링강/.test(t)) return '특수강';
   if(/구조용/.test(t)) return '구조용강';
-  if(/STS|SUS|2205|2507|310S|309S/.test(t)) return '스테인리스';
-  if(/TI\s?GR|인코넬|하스텔로이|모넬|INCONEL/.test(t)) return '티타늄·니켈';
+  if(/STS|SUS|2205|2507|310S|309S|17-?4\s?PH/.test(t)) return '스테인리스';
+  if(/TI\s?GR|INCONEL|INCOLOY|HASTELLOY|MONEL|NICKEL|TITANIUM/.test(t)) return '티타늄·니켈';
   if(/C\d{3,4}|황동|인청동/.test(t)) return '구리·동합금';
   if(/AA?\d{4}|2024|7075|2017|5052|6061|1050/.test(t)) return '알루미늄';
-  if(/SKD|SKH|SKS/.test(t)) return '공구강';
-  if(/S690|A709/.test(t)) return '고장력강';
-  if(/SCM|SNCM|S45C|SM45/.test(t)) return '특수강';
+  if(/SKD|SKH|SKS|SLD|STAVAX|S136|NAK80|HP4MA|P20(?![0-9])|H13/.test(t)) return '공구강';
+  if(/S690|A709|HARDOX|하독스/.test(t)) return '고장력강';
+  if(/SCM|SNCM|S45C|SM45|SUJ|SUM\d|SUP\d|SUH|SK\d/.test(t)) return '특수강';
   if(/S355|SAE|SM\d|SS\d|STK|HE\s?\d/.test(t)) return '구조용강';
   return '구조용강';
 }

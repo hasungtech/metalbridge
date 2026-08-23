@@ -234,3 +234,49 @@ test('접수에 실패해도 메일 앱을 열지 않는다', async ({ page }) =
   // 다시 누를 수 있어야 합니다
   await expect(page.locator('#sendStaff')).toBeEnabled();
 });
+
+/* ── 소개 화면 취급 범위 ── */
+
+test('소개 화면에 적은 소재는 모두 판별되고 공급처가 있다', async ({ page }) => {
+  await page.goto('/');
+
+  const line = await page.locator('.intro-facts dd').first().innerText();
+  const words = line.split('·').map((w) => w.trim()).filter(Boolean);
+  expect(words.length).toBeGreaterThanOrEqual(6);
+
+  // 표기만 늘리고 판별이 못 따라가면 엉뚱한 공급처에 요청서가 나갑니다.
+  const routed = await page.evaluate(async (list) => {
+    const m = await import('/src/engine/suppliers.js');
+    return list.map((w) => {
+      const cat = m.catOf(w);
+      return { w, cat, n: m.SUPPLIER_MASTER.filter((s) => s.cat.indexOf(cat) >= 0).length };
+    });
+  }, words);
+
+  for (const r of routed) {
+    // 못 알아본 낱말은 구조용강으로 떨어집니다 — 구조용강 자신 말고는 실패입니다
+    if (r.w !== '구조용강') expect(r.cat, `${r.w} 판별 실패`).not.toBe('구조용강');
+    expect(r.n, `${r.w} → ${r.cat} 공급처 없음`).toBeGreaterThan(0);
+  }
+});
+
+test('취급 · 형상 · 원칙 세 줄이 4개 언어로 나온다', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.intro-facts > div')).toHaveCount(3);
+
+  for (const code of ['ko', 'en', 'ja', 'zh']) {
+    await page.click(`#langSw button[data-l="${code}"]`);
+    await page.waitForTimeout(200);
+    const rows = await page.$$eval('.intro-facts > div', (els) =>
+      els.map((e) => [e.querySelector('dt').textContent.trim(), e.querySelector('dd').textContent.trim()]));
+    for (const [k, v] of rows) {
+      expect(k.length, `${code} 라벨 비어 있음`).toBeGreaterThan(0);
+      expect(v.split('·').length, `${code} 항목 부족`).toBeGreaterThanOrEqual(3);
+    }
+    // 한국어 식별자가 다른 언어 화면에 새지 않아야 합니다
+    if (code !== 'ko') {
+      const joined = rows.map((r) => r.join(' ')).join(' ');
+      expect(joined).not.toContain('스테인리스');
+    }
+  }
+});

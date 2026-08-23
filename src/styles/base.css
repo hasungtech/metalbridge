@@ -80,10 +80,13 @@ input,textarea,select{font-family:inherit}
 .intro-lead{font-size:17px;color:var(--mute);line-height:1.65;margin:0;max-width:44ch;word-break:keep-all}
 .intro-cta{display:flex;align-items:center;gap:var(--md);flex-wrap:wrap}
 .intro-go{padding:16px 34px;font-size:16px}
-.intro-facts{display:flex;flex-direction:column;gap:var(--sm);margin:var(--sm) 0 0;
+/* 라벨 폭은 가장 긴 낱말에 맞춥니다 — 언어마다 길이가 달라(취급 / How we work)
+   고정 폭으로 두면 영어에서 라벨이 석 줄로 접힙니다. */
+.intro-facts{display:grid;grid-template-columns:max-content 1fr;align-items:baseline;
+  column-gap:var(--md);row-gap:var(--sm);margin:var(--sm) 0 0;
   border-top:1px solid var(--hairline);padding-top:var(--lg)}
-.intro-facts>div{display:flex;gap:var(--md);align-items:baseline}
-.intro-facts dt{font-size:11px;color:var(--mute);letter-spacing:.06em;flex:0 0 40px}
+.intro-facts>div{display:contents}
+.intro-facts dt{font-size:11px;color:var(--mute);letter-spacing:.06em;white-space:nowrap}
 .intro-facts dd{margin:0;font-size:13px;color:var(--mute);word-break:keep-all}
 
 /* 대신하는 일 — 표를 접어 한 줄로 */
