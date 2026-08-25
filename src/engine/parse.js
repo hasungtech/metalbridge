@@ -43,9 +43,11 @@ export function parseLine(raw){
   var m2 = line.match(/([\d.]+)\s*[t]?\s*[x×*]\s*([\d.]+)\s*[x×*]\s*([\d.]+)\s*[x×*]\s*([\d.]+)/i);
   var m3 = line.match(/([\d.]+)\s*[t]?\s*[x×*]\s*([\d.]+)\s*[x×*]\s*([\d.]+)/i);
   var m4 = line.match(/([\d.]+)\s*[x×*]\s*([\d.]+)/i);
+  var diaList=false;
   if(m0){
     dims = m0[2].split(/[,，·]/).map(function(x){ return x.trim(); }).filter(Boolean);
     dim = 'Ø' + dims[0] + '~' + dims[dims.length-1] + ' (' + dims.length + '종)';
+    diaList = true;
   }
   else if(m2){ dims=[m2[1],m2[2],m2[3],m2[4]]; dim=dims.join(' × '); }
   else if(m3){ dims=[m3[1],m3[2],m3[3]]; dim=dims.join(' × '); }
@@ -69,15 +71,21 @@ export function parseLine(raw){
   // 단위가 붙은 수량 — "각 50본" "20장" "100개". 치수 숫자와 헷갈리지 않는 가장 확실한 표기라
   // 트레일링 숫자 추정보다 우선합니다. "각"이 있으면 지름·규격당 수량입니다.
   // \b 는 한글 뒤에서 성립하지 않으므로 ASCII 단위에만 붙입니다
-  var mq = line.match(/(?:각각?\s*)?([\d,]+)\s*(?:본|장|개|매|롤|EA\b|PCS\b)/i);
-  if(mq){ var qv = cleanNum(mq[1]); if(qv>0 && qv<100000) { qty = Math.round(qv); ambiguous = false; } }
+  var mq = line.match(/(각각?\s*)?([\d,]+)\s*(?:본|장|개|매|롤|EA\b|PCS\b)/i);
+  var each = false;
+  if(mq){ var qv = cleanNum(mq[2]); if(qv>0 && qv<100000) { qty = Math.round(qv); ambiguous = false; each = !!mq[1]; } }
   if(!shape && dims.length===3 && /t|\*/.test(line)) { shape='판재'; needLen=false; }
   if(!uniq.length && !shape && !dim) return null;
 
   var hasLen = /\bL\s*[:=]?\s*[\d.]+|\b\d{4,6}\s*L\b|길이|\b\d+\s?m\b|정척/i.test(line);
+  // 길이 값 — 판독만 하고 버리면 요청서 치수 칸에서 사라집니다 ("4200L 기준" → L4200)
+  var len=null, ml = line.match(/\bL\s*[:=]?\s*([\d.]+)|\b(\d{4,6})\s*L\b/i);
+  if(ml) len = ml[1] || ml[2];
+  if(diaList && len) dim += ' × L' + len;
   return {
     raw: line, grades: uniq, shape: shape||'(미분류)', dim: dim||'(미기재)',
-    dims: dims, qty: qty, needLen: needLen, hasLen: hasLen, ambiguous: ambiguous
+    dims: dims, qty: qty, needLen: needLen, hasLen: hasLen, ambiguous: ambiguous,
+    diaList: diaList, each: each, len: len
   };
 }
 

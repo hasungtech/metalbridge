@@ -8,7 +8,7 @@
 import { supabase, hasSupabase } from '../lib/supabase.js';
 import { S } from '../state.js';
 import { matchSuppliers, catOf } from './suppliers.js';
-import { rfqNo, summaryCounts, mtcSpec } from './export-rfq.js';
+import { rfqNo, summaryCounts, mtcSpec, tolSpec } from './export-rfq.js';
 
 /** 스토리지 경로에 쓸 수 있게 파일명을 정리합니다 (경로 이탈·특수문자 방지) */
 function safeName(name) {
@@ -63,7 +63,7 @@ export async function submitRfq() {
         finish: S.ANS.finish || null,
         heat: S.ANS.heat || null,
         fab: S.ANS.fab || null,
-        tol: S.ANS.tol || null,
+        tol: S.ANS.tol ? tolSpec() : null,
         origin: S.ANS.origin || null,
         incoterm: S.ANS.incoterm || null,
         order_type: S.ANS.repeat || null,

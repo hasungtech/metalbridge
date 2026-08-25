@@ -156,6 +156,10 @@ export default {
     tolL: '공차', tolQ: '공차 요구가 있으십니까?',
     tolPh: '예) ±0.1',
     tolO: ['일반 공차 (KS·JIS 표준)', '정밀 공차 지정', '도면대로', '모르겠습니다'],
+    tolSpecL: '공차 값',
+    tolSpecQ: '정밀 공차를 어떻게 지정하십니까? 값이 있어야 공급처가 단가를 낼 수 있습니다.',
+    tolSpecPh: '예) h9 · ±0.1 · Ø공차 -0.05/-0.10',
+    tolSpecO: ['도면 첨부로 갈음', '모르겠습니다'],
     originL: '원산지', originQ: '원산지 제한이 있으십니까?',
     originPh: '예) 중국산 제외',
     originO: ['무관', '국산 우선', '수입 가능', '특정국 제외'],
@@ -197,6 +201,7 @@ export default {
 
   chat: {
     sendFailConfig: '<b>접수하지 못했습니다.</b><span class="mini">접수 창구가 아직 연결되지 않았습니다. 요청서를 내려받아 quote@metalbridge.ai 로 보내주시면 담당자가 바로 확인하겠습니다.</span>',
+    contactBad: '연락처 형식이 맞지 않습니다. 이메일 주소나 전화번호로 다시 알려주십시오. 회신을 전달할 유일한 통로입니다.',
     sendFailDb: '<b>접수하지 못했습니다.</b><span class="mini">잠시 후 다시 눌러주십시오. 계속 안 되면 요청서를 내려받아 quote@metalbridge.ai 로 보내주십시오.</span>',
     stateFail: '접수되지 않았습니다 · 다시 시도해 주십시오',
     needIntro: '<b>어떤 소재가 필요하신지 여쭙겠습니다.</b><span class="mini">소재 · 형상 · 치수 · 수량 네 가지만 알려주시면 요청서를 만들 수 있습니다.</span>',

@@ -157,6 +157,12 @@ function submit(text, display){
   askChips.innerHTML='';
   if(S.MODE==='qa'){
     var r=S.qQueue[S.qPos];
+    /* 연락처는 회신을 전달할 유일한 통로입니다. "1" 같은 답이 그대로 통과하면
+       접수돼도 돌려드릴 방법이 없으므로 이메일 또는 전화 형식만 받습니다. */
+    if(r.k==='contact' && !/\S+@\S+\.\S+/.test(v) && !/(?:\d[\s-]?){8,}/.test(v)){
+      sys(t('chat.contactBad'));
+      return;
+    }
     S.QLOG.push({label:val(r.label),q:val(r.q),a:v,rows:r.rows||[]});
     applyAnswer(r.k,v,r.rows);
     var ok=S.ITEMS.filter(function(i){return i.state==='확정';}).length;

@@ -157,6 +157,10 @@ export default {
     tolL: 'Tolerance', tolQ: 'Any tolerance requirement?',
     tolPh: 'e.g. ±0.1',
     tolO: ['Standard (KS / JIS)', 'Tight tolerance specified', 'Per drawing', 'Not sure'],
+    tolSpecL: 'Tolerance value',
+    tolSpecQ: 'What tolerance exactly? Suppliers cannot price "tight" without a number.',
+    tolSpecPh: 'e.g. h9 · ±0.1 · dia. -0.05/-0.10',
+    tolSpecO: ['Per attached drawing', 'Not sure'],
     originL: 'Origin', originQ: 'Any restriction on country of origin?',
     originPh: 'e.g. no Chinese mills',
     originO: ['No restriction', 'Prefer Korean', 'Imported is fine', 'Exclude certain countries'],
@@ -198,6 +202,7 @@ export default {
 
   chat: {
     sendFailConfig: '<b>We could not receive that.</b><span class="mini">Our intake is not connected yet. Download the RFQ and email it to quote@metalbridge.ai and our team will pick it up straight away.</span>',
+    contactBad: 'That does not look like a contact. Please give an email address or a phone number — it is the only way we can send replies back.',
     sendFailDb: '<b>We could not receive that.</b><span class="mini">Please press the button again in a moment. If it keeps failing, download the RFQ and email it to quote@metalbridge.ai.</span>',
     stateFail: 'Not received · please try again',
     needIntro: '<b>Let us ask what you need.</b><span class="mini">Four things — material, form, size and quantity — and we can build the RFQ.</span>',

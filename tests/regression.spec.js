@@ -145,7 +145,12 @@ async function runToDone(page, fallback = '부산') {
     if (await page.locator('#doneBox').isVisible()) return true;
     const chips = page.locator('#askChips button');
     if (await chips.count()) await chips.first().click();
-    else { await page.fill('#askIn', fallback); await page.press('#askIn', 'Enter'); }
+    else {
+      // 연락처는 형식 검증이 있어 아무 글자로는 통과하지 못합니다
+      const q = await page.locator('.abub.sys').last().innerText();
+      const v = /연락처/.test(q) ? 'buyer@example.com' : fallback;
+      await page.fill('#askIn', v); await page.press('#askIn', 'Enter');
+    }
     await page.waitForTimeout(350);
   }
   return page.locator('#doneBox').isVisible();
@@ -206,7 +211,11 @@ test('견적에 필요한 조건을 모두 묻는다', async ({ page }) => {
     want.forEach((w) => { if (txt.includes(w)) seen.add(w); });
     const chips = page.locator('#askChips button');
     if (await chips.count()) await chips.first().click();
-    else { await page.fill('#askIn', '부산'); await page.press('#askIn', 'Enter'); }
+    else {
+      // 연락처는 형식 검증이 있어 아무 글자로는 통과하지 못합니다
+      const v = /연락처/.test(txt) ? 'buyer@example.com' : '부산';
+      await page.fill('#askIn', v); await page.press('#askIn', 'Enter');
+    }
     await page.waitForTimeout(350);
   }
   expect([...seen].sort()).toEqual([...want].sort());
@@ -392,4 +401,83 @@ test('텍스트 한 줄로 품목이 잡히면 곧바로 문답이 시작된다'
   const card = await page.textContent('#specBody .card');
   expect(card).toContain('Ø13~46 (17종)');
   expect(card).toContain('50');
+});
+
+
+test('연락처는 형식이 맞아야 통과한다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  await page.fill('#askIn', 'STS316L 판재 1000x2000xt10 20장');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(900);
+  await expect(page.locator('.abub.sys').last()).toContainText('연락처');
+
+  // "1" 은 회신을 전달할 수 없는 답입니다 — 같은 질문에 머물러야 합니다
+  await answer(page, '1');
+  await expect(page.locator('.abub.sys').last()).toContainText('형식이 맞지 않습니다');
+  await answer(page, '051-123-4567');
+  await expect(page.locator('.abub.sys').last()).not.toContainText('형식이 맞지 않습니다');
+});
+
+test('정밀 공차를 고르면 값을 되묻고 요청서에 실린다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  await page.fill('#askIn', 'STS316L 환봉 Ø50 L1000 10본');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(900);
+
+  for (let i = 0; i < 30; i++) {
+    if (await page.locator('#doneBox').isVisible()) break;
+    const q = await page.locator('.abub.sys').last().innerText();
+    if (/공차 요구/.test(q)) {
+      await page.locator('#askChips button', { hasText: '정밀 공차' }).click();
+      await page.waitForTimeout(350);
+      // 칩만으로 끝나면 공급처가 가격을 못 냅니다 — 값을 물어야 합니다
+      await expect(page.locator('.abub.sys').last()).toContainText('정밀 공차를 어떻게');
+      await answer(page, 'h9');
+      continue;
+    }
+    const chips = page.locator('#askChips button');
+    if (await chips.count()) await chips.first().click();
+    else {
+      const v = /연락처/.test(q) ? 'buyer@example.com' : '부산';
+      await page.fill('#askIn', v); await page.press('#askIn', 'Enter');
+    }
+    await page.waitForTimeout(350);
+  }
+  const tol = await page.evaluate(async () => {
+    const e = await import('/src/engine/export-rfq.js');
+    return e.tolSpec();
+  });
+  expect(tol).toBe('정밀 공차 지정 — h9');
+});
+
+test('지름 목록 품목은 요청서에서 지름별 행으로 전개된다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  await page.fill('#askIn',
+    'SKH51 ROUND BAR Ø(13,16,17,18,20,24,25,26,28,30,32,34,38,40,42,44,46) 각 50본 _ 4200L 기준');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(900);
+
+  // 카드에도 길이가 보여야 합니다 — "4200L 기준"이 판독만 되고 사라지면 안 됩니다
+  const card = await page.textContent('#specBody .card');
+  expect(card).toContain('× L4200');
+
+  const [dl] = await Promise.all([
+    page.waitForEvent('download'),
+    page.evaluate(async () => { const e = await import('/src/engine/export-rfq.js'); e.exportRfq(); }),
+  ]);
+  const fs = await import('fs');
+  const XLSX = await import('xlsx');
+  // ESM 번들에는 fs 가 물려 있지 않아 readFile 대신 버퍼로 읽습니다
+  const wb = XLSX.read(fs.readFileSync(await dl.path()));
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets['① 견적요청서(발송용)'], { header: 1 });
+  // 지름 17종 → 17행, 각 행에 길이와 지름당 수량 50
+  const items = rows.filter((r) => typeof r[3] === 'string' && /^Ø\d+ × L4200$/.test(r[3]));
+  expect(items.length).toBe(17);
+  for (const r of items) expect(r[4]).toBe(50);
+  // 첫 행 비고에 총량이 있어야 공급처가 되묻지 않습니다
+  const first = items[0];
+  expect(String(first[12])).toContain('총 850');
 });
