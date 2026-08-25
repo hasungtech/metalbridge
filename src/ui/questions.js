@@ -146,6 +146,11 @@ function quoteQuestions() {
     { k: 'tol', label: t('q.tolL'), q: t('q.tolQ'), ph: t('q.tolPh'),
       opts: opts(['일반 공차 (KS·JIS 표준)', '정밀 공차 지정', '도면대로', '모르겠습니다'], 'q.tolO') },
 
+    // "정밀 공차 지정"만 눌러서는 공급처가 가격을 못 냅니다 — 값을 되묻습니다
+    { k: 'tolSpec', label: t('q.tolSpecL'), q: t('q.tolSpecQ'), ph: t('q.tolSpecPh'),
+      when: function () { return S.ANS.tol === '정밀 공차 지정'; },
+      opts: opts(['도면 첨부로 갈음', '모르겠습니다'], 'q.tolSpecO') },
+
     { k: 'mtc', label: t('q.mtcL'), q: t('q.mtcQ'), ph: '',
       // 밀시트는 기본으로 붙습니다 (소개 화면 원칙 줄). 여기서는 등급만 고릅니다
       opts: opts(['밀시트 (EN 10204 3.1)', '3.2 입회검사', '추가 시험 지정', '모르겠습니다'], 'q.mtcO') },

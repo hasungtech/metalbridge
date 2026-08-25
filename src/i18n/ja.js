@@ -156,6 +156,10 @@ export default {
     tolL: '公差', tolQ: '公差のご要求はございますか。',
     tolPh: '例）±0.1',
     tolO: ['一般公差（JIS 標準）', '精密公差を指定', '図面どおり', 'わかりません'],
+    tolSpecL: '公差の値',
+    tolSpecQ: '精密公差の値をご指定ください。数値がないと供給元は単価を出せません。',
+    tolSpecPh: '例）h9 · ±0.1 · 径 -0.05/-0.10',
+    tolSpecO: ['添付図面のとおり', 'わかりません'],
     originL: '原産地', originQ: '原産地の制限はございますか。',
     originPh: '例）中国製を除く',
     originO: ['指定なし', '国産優先', '輸入可', '特定国を除く'],
@@ -197,6 +201,7 @@ export default {
 
   chat: {
     sendFailConfig: '<b>受け付けられませんでした。</b><span class="mini">受付窓口がまだ接続されていません。依頼書をダウンロードのうえ quote@metalbridge.ai へお送りいただければ、担当者がすぐ確認します。</span>',
+    contactBad: '連絡先の形式が正しくないようです。メールアドレスか電話番号でお知らせください。回答をお返しする唯一の窓口です。',
     sendFailDb: '<b>受け付けられませんでした。</b><span class="mini">少し経ってからもう一度押してください。それでも失敗する場合は、依頼書をダウンロードして quote@metalbridge.ai へお送りください。</span>',
     stateFail: '受け付けられていません · もう一度お試しください',
     needIntro: '<b>何が必要かお伺いします。</b><span class="mini">材料・形状・寸法・数量の4つをお教えいただければ、依頼書を作成できます。</span>',

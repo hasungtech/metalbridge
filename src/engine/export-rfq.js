@@ -17,6 +17,12 @@ export function rfqNo(){
 export function pick(k){ return S.ANS[k]||''; }
 /** 성적서 등급. 밀시트(EN 10204 3.1)는 기본이라 답이 없거나 모르셔도 빠지지 않습니다 —
  *  소개 화면의 "밀시트는 소재와 함께 나갑니다"가 요청서에서 지켜지는 자리입니다. */
+/** 공차 표기. "정밀 공차 지정" 칩만으로는 공급처가 가격을 못 내므로
+ *  후속 답(tolSpec)이 있으면 붙여 내보냅니다. */
+export function tolSpec(){
+  var t=pick('tol')||'일반 공차', v=pick('tolSpec');
+  return v ? t+' — '+v : t;
+}
 export function mtcSpec(){
   var v=pick('mtc');
   return (!v || v==='모르겠습니다') ? '밀시트 (EN 10204 3.1)' : v;
@@ -45,17 +51,37 @@ function buildBook(mode){
   var rCond=Q.length; Q.push(['■ 요청 조건']);
   Q.push(['희망 납기',pick('due')||'협의','','인도 장소',pick('place')||'협의','','인도 조건',pick('incoterm')||'협의']);
   Q.push(['용도',pick('usage')||'미기재','','표면·마감',pick('finish')||'협의','','열처리·조질',pick('heat')||'지정 없음']);
-  Q.push(['가공 범위',pick('fab')||'협의','','공차',pick('tol')||'일반 공차','','성적서',mtcSpec()]);
+  Q.push(['가공 범위',pick('fab')||'협의','','공차',tolSpec(),'','성적서',mtcSpec()]);
   Q.push(['원산지',pick('origin')||'무관','','발주 형태',pick('repeat')||'미정','','대체 강종','동등 이상 제안 가능']);
   Q.push(['통화',  'KRW 또는 USD','','결제 조건','협의','','','']);
   if(pick('extra')) Q.push(['추가 요청',pick('extra')]);
   Q.push([]);
-  var rItems=Q.length; Q.push(['■ 견적 요청 품목  ('+sendable.length+'건)']);
+  /* 지름 목록 품목("Ø(13,…,46) 각 50본")은 지름별 행으로 전개합니다.
+     공급처는 지름마다 단가가 다르므로 한 줄로 나가면 되묻습니다.
+     '각' 이 없는데 지름이 여럿이면 총량만 알므로 배분 확인을 비고에 남깁니다. */
+  var lines=[];
+  sendable.forEach(function(it){
+    var unit = it.unit || pick('needUnit') || 'EA';
+    var note = it.issues.length ? '확인 중: '+it.issues.join(' · ') : '';
+    if(it.diaList && it.dims && it.dims.length>1){
+      var L = it.len ? ' × L'+it.len : '';
+      it.dims.forEach(function(d,di){
+        var n1 = di===0
+          ? (it.each && it.qty ? '지름별 각 '+it.qty+' · 총 '+(it.qty*it.dims.length)
+             : (it.qty ? '총 '+it.qty+' — 지름별 배분 확인' : note))
+          : '';
+        lines.push([it.grades.join(' / ')||'(협의)', it.shape, 'Ø'+d+L,
+                    it.each ? (it.qty||'') : (di===0 ? (it.qty||'') : ''), unit, n1]);
+      });
+    } else {
+      lines.push([it.grades.join(' / ')||'(협의)', it.shape, it.dim, it.qty||'', unit, note]);
+    }
+  });
+  var rItems=Q.length; Q.push(['■ 견적 요청 품목  ('+sendable.length+'건 · '+lines.length+'행)']);
   Q.push(['No','재질 / 강종','형상','치수 (mm)','수량','단위',
           '단가','금액','원산지','납기(주)','성적서','대체 제안','비고']);
-  sendable.forEach(function(it,k){
-    Q.push([k+1, it.grades.join(' / ')||'(협의)', it.shape, it.dim, it.qty||'', it.unit||pick('needUnit')||'EA',
-            '','','','','','', it.issues.length? '확인 중: '+it.issues.join(' · '):'']);
+  lines.forEach(function(l,k){
+    Q.push([k+1, l[0], l[1], l[2], l[3], l[4], '','','','','','', l[5]]);
   });
   if(!sendable.length){
     Q.push(['-','(품목 미확정 — 담당자가 고객과 확인 후 다시 보내드립니다)','','','','','','','','','','','']);
@@ -126,7 +152,7 @@ function buildBook(mode){
          ['인도 조건',pick('incoterm')||'-','','발주 형태',pick('repeat')||'-'],
          ['용도',pick('usage')||'-','','표면·마감',pick('finish')||'-'],
          ['열처리·조질',pick('heat')||'-','','가공 범위',pick('fab')||'-'],
-         ['공차',pick('tol')||'-','','원산지',pick('origin')||'-'],
+         ['공차',tolSpec(),'','원산지',pick('origin')||'-'],
          ['성적서',mtcSpec(),'','추가 요청',pick('extra')||pick('memo')||'-'],
          [],
          ['■ 판독 요약'],
