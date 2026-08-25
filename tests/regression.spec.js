@@ -374,3 +374,22 @@ test('브랜드 페이지 — 로고 규정과 색이 뜬다', async ({ page }) 
   await expect(page.locator('#logo ul li')).toHaveCount(5);
   await expect(page.locator('#term table tr')).toHaveCount(6);
 });
+
+test('텍스트 한 줄로 품목이 잡히면 곧바로 문답이 시작된다', async ({ page }) => {
+  // 실제 테스터 입력. hideDrop ReferenceError 로 첫 문장에서 죽어
+  // "아무 작동도 안 하는" 회귀가 있었습니다 — 말풍선 하나로 끝나면 실패입니다.
+  await page.goto('/');
+  await page.check('#agreeReq');
+  await page.fill('#askIn',
+    'SKH51 ROUND BAR Ø(13,16,17,18,20,24,25,26,28,30,32,34,38,40,42,44,46) 각 50본 _ 4200L 기준');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(1200);
+
+  // 한 번 보낸 뒤 반드시 다음 질문이 떠야 합니다 (두 번째 입력으로 복구되는 건 무효)
+  await expect(page.locator('.abub.sys').last()).toContainText('연락처');
+  // 지름 목록·각 n본·4200L 이 모두 읽혀야 합니다
+  await expect(page.locator('#specMeta')).toContainText('확정 1');
+  const card = await page.textContent('#specBody .card');
+  expect(card).toContain('Ø13~46 (17종)');
+  expect(card).toContain('50');
+});

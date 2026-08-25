@@ -1,0 +1,24 @@
+import { chromium } from '@playwright/test';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const p = await b.newPage({ viewport:{width:390,height:844}, locale:'ko-KR' });
+const errs = [];
+p.on('pageerror', e => errs.push('PAGEERROR: '+e.message));
+p.on('console', m => { if (m.type()==='error') errs.push('CONSOLE: '+m.text()); });
+await p.goto('http://localhost:5173/');
+await p.check('#agreeReq');
+const TXT = 'SKH51 ROUND BAR Ø(13,16,17,18,20,24,25,26,28,30,32,34,38,40,42,44,46) 각 50본 _ 4200L 기준';
+await p.fill('#askIn', TXT);
+await p.press('#askIn', 'Enter');
+await p.waitForTimeout(1500);
+const bubbles = await p.$$eval('.abub', els => els.map(e => (e.className.includes('me')?'[ME] ':'[SYS] ')+e.innerText.replace(/\n+/g,' | ').slice(0,150)));
+console.log('말풍선', bubbles.length);
+bubbles.forEach(x=>console.log(' ',x));
+console.log('chips:', await p.locator('#askChips button').count());
+console.log('specMeta:', await p.locator('#specMeta').innerText().catch(()=>'-'));
+const item = await p.evaluate(async ()=>{
+  const s = await import('/src/state.js');
+  return JSON.stringify(s.S.ITEMS, null, 0).slice(0, 600);
+});
+console.log('ITEMS:', item);
+console.log('오류:', errs.length ? errs.join('\n') : '없음');
+await b.close();
