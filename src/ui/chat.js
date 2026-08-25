@@ -180,7 +180,10 @@ function submit(text, display){
     var add=[];
     v.split(/\r?\n|,\s*(?=[A-Za-z가-힣])/).forEach(function(l){ var it=parseLine(l); if(it) add.push(it); });
     if(add.length){
-      S.ITEMS=S.ITEMS.concat(add); S.GAPS=diagnose(S.ITEMS); renderSpec(); hideDrop();
+      /* hideDrop 은 히어로 리팩터링 때 정의가 사라졌던 함수입니다 — 텍스트로 품목이
+         판독되는 첫 문장에서 ReferenceError 로 죽어 문답이 시작되지 않았습니다.
+         파일 경로와 같게 syncHero 로 드롭 영역 상태를 갱신합니다. */
+      S.ITEMS=S.ITEMS.concat(add); S.GAPS=diagnose(S.ITEMS); renderSpec(); syncHero();
       sys(t('chat.parsedText',{n:add.length}));
       startQA();
     } else {

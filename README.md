@@ -90,7 +90,7 @@ src/
   engine/             DOM을 모르는 순수 로직
     parse.js          텍스트 → 품목 판독 · 결손 진단
     read-file.js      xlsx · pdf · csv → 텍스트 라인
-    suppliers.js      공급처 62곳 · 소재 분류 · 매칭
+    suppliers.js      공급처 74곳 · 소재 분류 · 매칭
     export-rfq.js     요청서 엑셀 4시트 생성
     submit.js         Supabase 접수 (실패 시 메일 폴백)
   ui/                 화면 조작

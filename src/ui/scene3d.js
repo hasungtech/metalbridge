@@ -5,7 +5,7 @@
  */
 import { reduce } from '../state.js';
 import { feature, mesh } from 'topojson-client';
-import { SUPPLIER_MASTER } from '../engine/suppliers.js';
+import { SUPPLIER_MASTER, MARKET_POOL } from '../engine/suppliers.js';
 import { t, onLangChange } from '../i18n/index.js';
 
 /* 나라 단위입니다. 도시 이름은 쓰지 않습니다 — 발송은 국가 단위로 나갑니다.
@@ -77,7 +77,7 @@ export function initScene(){
   let land = [];
   const grid = graticule();
   const paths = ZONES.slice(1).map((z, i) => ({ key:z.key, phase:i/3, pts:greatCircle(HUB, z, 64) }));
-  let rot = 108, dir = 1, drag = null, vis = true;
+  let rot = 108, drag = null, vis = true;
 
   /* 지리 데이터는 같은 출처에서 지연 로드합니다 (외부 네트워크 없음) */
   fetch('/geo/countries-110m.json')
@@ -128,12 +128,10 @@ export function initScene(){
       const cy = h * (wide ? 0.48 : 0.5);
       const R  = wide ? Math.min(w, h) * 0.70 : Math.min(w, h) / 2 - 12;
 
-      if(!reduce && !drag){
-        rot += 0.04 * dir;
-        if(rot > 132) dir = -1;
-        if(rot < 86)  dir = 1;
-      }
-      // rot 이 화면 중심 경도가 되도록 90° 보정 (명세: 86~132° 왕복이면 네 도시가 항상 보임)
+      /* 멈추지 않고 한 방향으로 돕니다. 라벨과 경로는 뒷면에서 스스로 숨으므로
+         네 나라가 잠시 안 보이는 구간이 있어도 그대로 둡니다. */
+      if(!reduce && !drag) rot += 0.045;
+      // rot 이 화면 중심 경도가 되도록 90° 보정
       const a = -(rot + 90) * D2R, cos = Math.cos(a), sin = Math.sin(a);
 
       ctx.strokeStyle = C.rim; ctx.lineWidth = 1;
@@ -162,7 +160,10 @@ export function initScene(){
         }
         const el = labelBox && labelBox.children[i];
         if(el){
-          el.style.display = front ? 'block' : 'none';
+          /* 넓은 화면에서는 왼쪽이 카피 자리입니다. 회전으로 그 위까지 넘어온
+             라벨은 잠시 숨깁니다 — 글자 위에 글자가 겹칩니다. */
+          const clear = !wide || p[0] > w * 0.46;
+          el.style.display = (front && clear) ? 'block' : 'none';
           el.style.left = p[0] + 'px';
           el.style.top  = p[1] + 'px';
         }
@@ -176,14 +177,15 @@ export function initScene(){
     if(!labelBox) return;
     labelBox.innerHTML = ZONES.map(z =>
       '<span class="glabel dir-'+z.dir+'"'+(z.ny ? ' style="margin-top:'+z.ny+'px"' : '')+'>'+
-      '<b>'+z.en+'</b><i>'+t('flow.candidate',{n:supplierCount(z.ko)})+'</i></span>').join('');
+      '<b>'+z.en+'</b></span>').join('');
   }
   if(labelBox){
     /* ny — 지구본이 작아지면 중국과 인도가 같은 높이로 붙습니다. 인도만 내려 어긋냅니다. */
     paintLabels();
   }
 
-  /* 권역 — 지구본이 소개 화면으로 올라갔으므로 여기는 숫자가 주인공입니다.
+  /* 권역 — 여기는 나라별 조달망 규모(MARKET_POOL · 운영자 추정)가 주인공입니다.
+     마스터 후보 수(supplierCount)가 아닙니다 — 후보는 이 풀에서 먼저 접촉할 곳일 뿐입니다.
      지구본과 떨어져 있어 호버 연동은 뜻이 없어 뺐습니다. */
   function paintZones(){
     const zoneBox = document.getElementById('zones');
@@ -192,7 +194,7 @@ export function initScene(){
       '<div class="zone" data-k="'+z.key+'">'+
         '<span class="zone-en">'+z.en+'</span>'+
         '<b class="zone-ko">'+t('zone.'+z.key+'.ko')+'</b>'+
-        '<p class="zone-n"><span class="mono">'+supplierCount(z.ko)+'</span>'+t('flow.unit')+'</p>'+
+        '<p class="zone-n"><span class="mono">'+MARKET_POOL[z.ko]+'</span>'+t('flow.unit')+'</p>'+
         '<p class="zone-good">'+t('zone.'+z.key+'.good')+'</p>'+
         '<p class="zone-meta mono">'+t('zone.'+z.key+'.meta')+'</p>'+
         '<p class="zone-batch mono"><i class="'+(z.batch==='1차'?'on':'')+'"></i>'+
@@ -209,11 +211,7 @@ export function initScene(){
     if(drag) rot = drag.r + (e.clientX - drag.x) * 0.4;
   });
   ['pointerup','pointercancel'].forEach(function(ev){
-    cv.addEventListener(ev, function(){
-      if(!drag) return;
-      drag = null;
-      rot = Math.max(86, Math.min(132, ((rot % 360) + 360) % 360));  // 왕복 범위로 복귀
-    });
+    cv.addEventListener(ev, function(){ drag = null; });  // 놓은 자리에서 계속 돕니다
   });
 
   new IntersectionObserver(function(es){ es.forEach(function(e){ vis = e.isIntersecting; }); },

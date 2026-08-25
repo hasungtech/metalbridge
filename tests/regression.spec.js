@@ -234,3 +234,162 @@ test('접수에 실패해도 메일 앱을 열지 않는다', async ({ page }) =
   // 다시 누를 수 있어야 합니다
   await expect(page.locator('#sendStaff')).toBeEnabled();
 });
+
+/* ── 소개 화면 취급 범위 ── */
+
+test('소개 화면에 적은 소재는 모두 판별되고 공급처가 있다', async ({ page }) => {
+  await page.goto('/');
+
+  const line = await page.locator('.intro-facts dd').first().innerText();
+  const words = line.split('·').map((w) => w.trim()).filter(Boolean);
+  expect(words.length).toBeGreaterThanOrEqual(6);
+
+  // 표기만 늘리고 판별이 못 따라가면 엉뚱한 공급처에 요청서가 나갑니다.
+  const routed = await page.evaluate(async (list) => {
+    const m = await import('/src/engine/suppliers.js');
+    return list.map((w) => {
+      const cat = m.catOf(w);
+      return { w, cat, n: m.SUPPLIER_MASTER.filter((s) => s.cat.indexOf(cat) >= 0).length };
+    });
+  }, words);
+
+  for (const r of routed) {
+    // 못 알아본 낱말은 구조용강으로 떨어집니다 — 구조용강 자신 말고는 실패입니다
+    if (r.w !== '구조용강') expect(r.cat, `${r.w} 판별 실패`).not.toBe('구조용강');
+    expect(r.n, `${r.w} → ${r.cat} 공급처 없음`).toBeGreaterThan(0);
+  }
+});
+
+test('소개 화면에 적은 형상은 모두 공급처가 있다', async ({ page }) => {
+  await page.goto('/');
+
+  // '절단 가공품' 은 형상이 아니라 가공 범위라 마스터의 sh 에 없습니다
+  const line = await page.locator('.intro-facts dd').nth(1).innerText();
+  const shapes = line.split('·').map((w) => w.trim()).filter((w) => w && !/절단/.test(w));
+  expect(shapes.length).toBeGreaterThanOrEqual(5);
+
+  const counts = await page.evaluate(async (list) => {
+    const m = await import('/src/engine/suppliers.js');
+    return list.map((sh) => ({
+      sh, n: m.SUPPLIER_MASTER.filter((s) => s.sh.indexOf(sh) >= 0).length,
+    }));
+  }, shapes);
+  for (const c of counts) expect(c.n, `${c.sh} 취급 공급처 없음`).toBeGreaterThan(0);
+});
+
+test('단조를 고르면 개략 치수와 단중을 묻는다', async ({ page }) => {
+  await page.goto('/');
+  await page.check('#agreeReq');
+  // 소재 이름만 적으면 품목이 안 잡혀 대화로 채웁니다
+  await page.fill('#askIn', '스테인리스가 필요합니다');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(600);
+
+  await answer(page, 'buyer@example.com');
+  await answer(page, '스테인리스');
+  await answer(page, 'STS316L');
+
+  await expect(page.locator('.abub.sys').last()).toContainText('어떤 형태로');
+  const shapes = await page.$$eval('#askChips button', (els) => els.map((e) => e.textContent.trim()));
+  expect(shapes).toContain('단조');
+  expect(shapes).toContain('주물');
+  await answer(page, '단조');
+
+  // 단조·주물은 도면 발주입니다 — 판재처럼 두께를 물으면 답이 안 나옵니다
+  await expect(page.locator('.abub.sys').last()).toContainText('개략');
+  await answer(page, 'Ø800 × H300');
+  await expect(page.locator('.abub.sys').last()).toContainText('중량');
+  await answer(page, '120');
+  await expect(page.locator('.abub.sys').last()).toContainText('얼마나 필요하십니까');
+  await answer(page, '4');
+  await answer(page, '개(EA)');
+
+  const card = await page.textContent('#specBody .card');
+  expect(card).toContain('단조');
+  expect(card).toContain('단중 120kg');
+
+  // 단조를 취급하는 공급처가 실제로 붙어야 합니다
+  const n = await page.evaluate(async () => {
+    const m = await import('/src/engine/suppliers.js');
+    return m.matchSuppliers().filter((x) => x.sp.sh.indexOf('단조') >= 0).length;
+  });
+  expect(n).toBeGreaterThan(0);
+});
+
+test('밀시트는 답이 없어도 요청서에 EN 10204 3.1 로 들어간다', async ({ page }) => {
+  await page.goto('/');
+
+  // 성적서 문항에 '불필요' 가 남아 있으면 소개 화면의 약속과 어긋납니다
+  const opts = await page.evaluate(async () => {
+    const d = await import('/src/i18n/ko.js');
+    return d.default ? d.default.q.mtcO : d.ko.q.mtcO;
+  });
+  expect(opts).not.toContain('불필요');
+
+  const spec = await page.evaluate(async () => {
+    const e = await import('/src/engine/export-rfq.js');
+    const s = await import('/src/state.js');
+    const out = {};
+    s.S.ANS.mtc = '';            out.empty = e.mtcSpec();
+    s.S.ANS.mtc = '모르겠습니다'; out.unsure = e.mtcSpec();
+    s.S.ANS.mtc = '3.2 입회검사'; out.chosen = e.mtcSpec();
+    return out;
+  });
+  expect(spec.empty).toContain('EN 10204 3.1');
+  expect(spec.unsure).toContain('EN 10204 3.1');
+  expect(spec.chosen).toBe('3.2 입회검사');
+});
+
+test('취급 · 형상 · 원칙 세 줄이 4개 언어로 나온다', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.intro-facts > div')).toHaveCount(3);
+
+  for (const code of ['ko', 'en', 'ja', 'zh']) {
+    await page.click(`#langSw button[data-l="${code}"]`);
+    await page.waitForTimeout(200);
+    const rows = await page.$$eval('.intro-facts > div', (els) =>
+      els.map((e) => [e.querySelector('dt').textContent.trim(), e.querySelector('dd').textContent.trim()]));
+    for (const [k, v] of rows) {
+      expect(k.length, `${code} 라벨 비어 있음`).toBeGreaterThan(0);
+      expect(v.split('·').length, `${code} 항목 부족`).toBeGreaterThanOrEqual(3);
+    }
+    // 한국어 식별자가 다른 언어 화면에 새지 않아야 합니다
+    if (code !== 'ko') {
+      const joined = rows.map((r) => r.join(' ')).join(' ');
+      expect(joined).not.toContain('스테인리스');
+    }
+  }
+});
+
+test('브랜드 페이지 — 로고 규정과 색이 뜬다', async ({ page }) => {
+  await page.goto('/brand.html');
+  await expect(page.locator('.logo-tile')).toHaveCount(2);
+  await expect(page.locator('.sw')).toHaveCount(6);
+  // 페이지의 HEX 는 토큰과 어긋나면 안 됩니다 — 몰튼 블루로 확인합니다
+  const molten = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--molten').trim());
+  const chip = await page.locator('.sw[data-hex="#0F62FE"] .mono').innerText();
+  expect(chip.toLowerCase()).toBe(molten.toLowerCase());
+  // 금지 규정과 용어 표가 있어야 발췌본 구실을 합니다
+  await expect(page.locator('#logo ul li')).toHaveCount(5);
+  await expect(page.locator('#term table tr')).toHaveCount(6);
+});
+
+test('텍스트 한 줄로 품목이 잡히면 곧바로 문답이 시작된다', async ({ page }) => {
+  // 실제 테스터 입력. hideDrop ReferenceError 로 첫 문장에서 죽어
+  // "아무 작동도 안 하는" 회귀가 있었습니다 — 말풍선 하나로 끝나면 실패입니다.
+  await page.goto('/');
+  await page.check('#agreeReq');
+  await page.fill('#askIn',
+    'SKH51 ROUND BAR Ø(13,16,17,18,20,24,25,26,28,30,32,34,38,40,42,44,46) 각 50본 _ 4200L 기준');
+  await page.press('#askIn', 'Enter');
+  await page.waitForTimeout(1200);
+
+  // 한 번 보낸 뒤 반드시 다음 질문이 떠야 합니다 (두 번째 입력으로 복구되는 건 무효)
+  await expect(page.locator('.abub.sys').last()).toContainText('연락처');
+  // 지름 목록·각 n본·4200L 이 모두 읽혀야 합니다
+  await expect(page.locator('#specMeta')).toContainText('확정 1');
+  const card = await page.textContent('#specBody .card');
+  expect(card).toContain('Ø13~46 (17종)');
+  expect(card).toContain('50');
+});

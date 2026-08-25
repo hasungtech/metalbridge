@@ -41,7 +41,7 @@
 
 - `engine/parse.js` — 텍스트 → 품목 판독, 결손 진단
 - `engine/read-file.js` — 파일 → 텍스트 라인 (xlsx·pdf·csv·txt)
-- `engine/suppliers.js` — 공급처 마스터 62곳, 소재 분류, 매칭
+- `engine/suppliers.js` — 공급처 마스터 74곳, 소재 분류, 매칭
 - `engine/export-rfq.js` — 요청서 엑셀 4시트, 담당자 전달
 
 ### 4. 회귀 테스트를 깨지 마십시오
@@ -94,7 +94,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 - 일본어·중국어는 어절 경계가 없어 `word-break:keep-all` 이 줄바꿈을 막습니다.
   `html[lang="ja"]` · `html[lang="zh"]` 에서 `word-break:normal` 로 되돌립니다
 - 회귀 테스트는 `playwright.config.js` 의 `locale: 'ko-KR'` 로 언어를 고정합니다
-- **`/admin` · `/privacy` · `/terms` 는 한국어 전용입니다.** 백오피스는 담당자용이고
+- **`/admin` · `/privacy` · `/terms` · `/brand` 는 한국어 전용입니다.** 백오피스는 담당자용이고
   법정 고지는 국내법 문서라 번역본에 법적 효력을 주기 어렵습니다
 
 ## 문답 — 답변만으로 견적이 나와야 합니다
@@ -121,9 +121,19 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 ## 문구 규칙
 
 - 검증되지 않은 수치를 쓰지 마십시오 (예: "48시간 회신", "98% 만족")
+  - 예외 하나: 권역 카드의 나라별 조달망 규모는 **운영자 제공 추정치**입니다
+    (2026-08-23 · 4개국 제조사·유통대리점·잔재 보유처 합계 3,700+).
+    `suppliers.js` 의 `MARKET_POOL` 이 단일 출처이고, 화면에는 반드시 `+` 를 붙여
+    하한으로만 표기합니다. 검증되면 값을 갱신하십시오
 - "최고", "혁신" 같은 표현 금지
 - 단가·시세를 사이트가 제시하지 않습니다. 견적은 공급처가 냅니다
-- 공급처 62곳은 **실존하지만 거래 이력이 없는 후보**입니다. 거래처로 표기하지 마십시오
+- 공급처 74곳은 **실존하지만 거래 이력이 없는 후보**입니다. 거래처로 표기하지 마십시오
+- 소개 화면의 `취급`·`형상` 줄은 `design/SOURCING_SCOPE.md` 가 단일 출처입니다.
+  후보 공급처가 없거나 `catOf()` 가 못 알아듣는 낱말은 적지 마십시오 — 표기만 늘리면
+  엉뚱한 공급처에 요청서가 나갑니다. 회귀 테스트가 두 가지를 함께 봅니다
+- **약속한 것은 요청서에서 지켜져야 합니다.** 소개 화면에 "밀시트(MTC)는 소재와 함께
+  나갑니다"라고 적었으므로 성적서 문항에 `불필요` 가 없고, 답이 없어도 `mtcSpec()` 이
+  EN 10204 3.1 로 채웁니다. 원칙 줄을 고치면 `export-rfq.js` 도 같이 고치십시오
 
 ## Design → Code 인수 절차
 
@@ -175,6 +185,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 | `design/TASKS.md` | 작업 백로그 (우선순위·완료 조건) |
 | `design/HANDOFF_DESIGN.md` | 메인 페이지 디자인 요구사항 |
 | `design/CONTRACT.md` | 지켜야 할 DOM 훅·클래스 |
+| `design/SOURCING_SCOPE.md` | 취급 소재·형상 범위 (표기 기준·제외 보류 목록) |
 | `docs/CLAUDE_CODE_시작하기.md` | 붙여넣기용 지시문 모음 |
 | `docs/세팅가이드.md` | 환경 구축 절차 |
 | `docs/운영매뉴얼.md` | 서비스 운영 규칙·지표·판단 기준 |
@@ -189,6 +200,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 | `/` | `index.html` → `src/main.js` | 방문자 |
 | `/admin` | `admin.html` → `src/admin/main.js` | 담당자 (Supabase Auth) |
 | `/privacy` `/terms` | `privacy.html` `terms.html` → `src/legal/main.js` | 법정 고지 (정적) |
+| `/brand` | `brand.html` → `src/brand/main.js` | 브랜드 리소스 — 외부 협업자용 공개 발췌 (한국어 전용) |
 
 Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 **백오피스는 xlsx·pdf 청크를 받지 않습니다** — 무거운 파서를 담당자 화면에 끌어오지 마십시오.
@@ -205,16 +217,19 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 
 0. **브랜드 소개** `#intro` — 좌: 카피·CTA·대신하는 일 한 줄 / 배경: 지구본이 오른쪽으로 걸쳐 잘림
 1. **전체화면 문의창** `#desk` — 상단 바 + `1fr 560px`. 좌: 드롭·대화·완료 블록·입력 / 우: 판독 결과 레일
-2. **거래 흐름** `#flow` — 권역 4열 카드. 나라별 후보 공급처 수가 주인공입니다
+2. **거래 흐름** `#flow` — 권역 4열 카드. 나라별 조달망 규모(`MARKET_POOL`)가 주인공입니다
 3. **회사 소개** `#about` — 정의문 · 원칙 3개 · CTA
 
 - 3D 라이브러리를 쓰지 않습니다. three.js는 제거했습니다
 - **지구본은 소개 화면에 하나뿐입니다.** 거래 흐름에도 두면 스크롤 두 번에 같은 그림을
   다시 보게 됩니다. `#globeCanvas` 를 늘리지 마십시오
+- 지구본은 한 방향으로 계속 돕니다 (왕복 아님). 네 나라가 뒷면으로 넘어가는 구간은
+  의도된 것입니다. `prefers-reduced-motion` 이면 멈춰 둡니다
 - 지구본 지리 데이터는 `public/geo/countries-110m.json` (Natural Earth · world-atlas ISC).
   같은 출처에서 지연 로드합니다 — 외부 네트워크에 의존하지 마십시오
-- 권역 카드의 후보 공급처 수는 `SUPPLIER_MASTER` 에서 세어 씁니다 (`supplierCount()`).
-  숫자를 화면에 적어두면 마스터를 갈아끼울 때 어긋납니다
+- 권역 카드의 숫자는 나라별 **조달망 규모** `MARKET_POOL` (운영자 추정)입니다.
+  마스터 후보 수(`supplierCount()`)가 아닙니다 — 후보 74곳은 이 풀에서 먼저
+  접촉할 곳일 뿐입니다. 지구본 라벨에는 숫자를 붙이지 않습니다 (나라 이름만)
 - **자료에서 품목을 못 찾으면 대화로 채웁니다.** 소재·강종·형상·치수·수량을 물어
   품목 한 줄을 만듭니다 (`questions.js` 의 `needQuestions()`). 이걸 빼면 요청서에
   넣을 줄이 없어 빈 표가 나갑니다
@@ -225,12 +240,17 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 ## 지금 남은 일
 
 - [x] 백오피스 화면 `/admin` — 매직링크 로그인 · 요청 목록 · 상태 변경 · 첨부 · 공급처 회신 입력
+- [ ] 대분류 6개 상세 페이지 — 실무 문의는 STS316L·SKD11 같은 **규격 코드**로 들어옵니다.
+      첫 화면은 대분류, 검색 유입은 규격 리스트가 받습니다 (`design/SOURCING_SCOPE.md` 의 대표 규격)
+- [ ] 문의 로그에 소재 대분류 태그 저장 → 분기 1회 취급 범위 재검토 (승격·보류 판단 근거)
+- [ ] 니켈합금 공급처에 하스텔로이·모넬 취급 여부 태깅 — 지금은 인코넬 기준으로만 묶여 있습니다
 - [ ] 공급처 마스터를 `suppliers` 테이블로 이관 후 백오피스에서 관리
 - [ ] 공급처 마스터를 `suppliers` 테이블로 이관 후 실제 거래처 입력
 - [ ] 공급처 회신 입력 화면 (지금은 엑셀 수신)
 - [ ] 접수 알림 (Edge Function → 메일 또는 슬랙)
 - [ ] 로고 선정 (`design_handoff_v4/METAL BRIDGE 로고 시안.dc.html` 10안) → 파비콘·앱 아이콘 교체
 - [ ] 다국어 문안 원어민 검수 (영어·일본어·중국어)
+- [ ] `/brand` 에 로고 파일 묶음 배포 (심벌 확정 후 — 지금은 규정만 공개)
 - [ ] 외국어 방문자용 법정 고지 — 지금은 `/privacy` `/terms` 가 한국어뿐입니다
 - [ ] 회사 정보 확정 → `privacy.html` · `terms.html` 의 `.todo` 표시 5곳 채우기
       (통신판매업 신고번호 · 대표 전화번호 2곳 · 시행일 2곳)

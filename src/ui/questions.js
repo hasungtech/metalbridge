@@ -29,7 +29,7 @@ function opts(values, key) {
 }
 /* ══════════ 소재군 — 표면·열처리 선택지가 여기에 따라 갈립니다 ══════════ */
 
-var MAT_VALUES = ['스테인리스', '알루미늄', '특수강·공구강', '인코넬·티타늄', '구조용강', '구리·동합금'];
+var MAT_VALUES = ['스테인리스', '알루미늄', '특수강·공구강', '니켈합금·티타늄', '구조용강', '구리·동합금'];
 
 /** 고르신 소재의 **화면 문구**. 질문에 끼워 넣을 때 한국어 식별자가 그대로
  *  영어 문장에 섞이지 않도록 사전의 라벨을 찾아 씁니다. */
@@ -43,7 +43,7 @@ var GRADES = {
   '스테인리스':    ['STS304', 'STS316L', 'STS310S', 'STS430', '모르겠습니다'],
   '알루미늄':      ['A1050', 'A5052', 'A6061-T6', 'A7075-T6', '모르겠습니다'],
   '특수강·공구강': ['S45C', 'SCM440', 'SKD11', 'SKD61', '모르겠습니다'],
-  '인코넬·티타늄': ['인코넬600', '인코넬625', 'Ti Gr.2', 'Ti Gr.5', '모르겠습니다'],
+  '니켈합금·티타늄': ['인코넬 625', '하스텔로이 C-276', 'Ti Gr.2', 'Ti Gr.5', '모르겠습니다'],
   '구조용강':      ['SS400', 'S355', 'SM490', 'SPHC', '모르겠습니다'],
   '구리·동합금':   ['C1100', 'C2600 황동', 'C5191 인청동', '모르겠습니다'],
 };
@@ -81,6 +81,8 @@ var DIM_A = {           // 1차 치수 — 형상마다 묻는 것이 다릅니�
   '환봉':      'dia',
   '각관·강관': 'tube',  '파이프': 'tube',
   '앵글':      'spec',  '채널': 'spec', 'H형강': 'spec',
+  /* 단조·주물은 도면 발주입니다. 개략 치수와 개당 중량(단중)으로 견적이 나갑니다 */
+  '단조':      'forge', '주물': 'forge', '링': 'forge',
 };
 function shapeKey() {
   var sh = S.ANS.needShape || '';
@@ -106,7 +108,7 @@ function needQuestions() {
       } },
 
     { k: 'needShape', label: t('q.needShapeL'), q: t('q.needShapeQ'), ph: t('q.needShapePh'),
-      opts: opts(['판재', '환봉', '각관·강관', '파이프', '앵글', '코일', '기타'], 'q.needShapeO') },
+      opts: opts(['판재', '환봉', '각관·강관', '파이프', '앵글', '단조', '주물', '코일', '기타'], 'q.needShapeO') },
 
     // 치수는 형상에 따라 묻는 항목이 다릅니다 (판재는 두께, 환봉은 지름 …)
     { k: 'needDimA', label: function () { return t('q.dimA.' + shapeKey() + 'L'); },
@@ -145,7 +147,8 @@ function quoteQuestions() {
       opts: opts(['일반 공차 (KS·JIS 표준)', '정밀 공차 지정', '도면대로', '모르겠습니다'], 'q.tolO') },
 
     { k: 'mtc', label: t('q.mtcL'), q: t('q.mtcQ'), ph: '',
-      opts: opts(['불필요', '밀시트 (EN 10204 3.1)', '3.2 입회검사', '모르겠습니다'], 'q.mtcO') },
+      // 밀시트는 기본으로 붙습니다 (소개 화면 원칙 줄). 여기서는 등급만 고릅니다
+      opts: opts(['밀시트 (EN 10204 3.1)', '3.2 입회검사', '추가 시험 지정', '모르겠습니다'], 'q.mtcO') },
 
     { k: 'origin', label: t('q.originL'), q: t('q.originQ'), ph: t('q.originPh'),
       opts: opts(['무관', '국산 우선', '수입 가능', '특정국 제외'], 'q.originO') },
@@ -226,6 +229,7 @@ function joinDim() {
     case 'dia':   return b ? 'Ø' + a + ' × L' + b : 'Ø' + a;
     case 'tube':  return b ? a + ' × L' + b : a;
     case 'spec':  return b ? a + ' × L' + b : a;
+    case 'forge': return b ? a + ' · 단중 ' + b + 'kg' : a;
     default:      return [a, b].filter(Boolean).join(' × ');
   }
 }
