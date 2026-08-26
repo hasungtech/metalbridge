@@ -186,6 +186,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 | `design/HANDOFF_DESIGN.md` | 메인 페이지 디자인 요구사항 |
 | `design/CONTRACT.md` | 지켜야 할 DOM 훅·클래스 |
 | `design/SOURCING_SCOPE.md` | 취급 소재·형상 범위 (표기 기준·제외 보류 목록) |
+| `design/AI_ROADMAP.md` | AI 확장 로드맵 (트리거 기반 · 게이트 3개) |
 | `docs/CLAUDE_CODE_시작하기.md` | 붙여넣기용 지시문 모음 |
 | `docs/세팅가이드.md` | 환경 구축 절차 |
 | `docs/운영매뉴얼.md` | 서비스 운영 규칙·지표·판단 기준 |
