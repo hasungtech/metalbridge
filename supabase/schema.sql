@@ -164,6 +164,32 @@ create policy "staff read rfq files"
   using (bucket_id = 'rfq-files');
 
 -- ═══════════════════════════════════════════════════════════
+--  AI 계측 로그 — 로드맵 트리거 지표의 근거 (폴백률·판독 확정률·문항 이탈)
+-- ═══════════════════════════════════════════════════════════
+create table if not exists public.ai_log (
+  id         uuid primary key,
+  kind       text not null,        -- ask · parse_ok · parse_fail · qa_drop
+  q          text,
+  hit        text,
+  lang       text,
+  created_at timestamptz not null default now()
+);
+alter table public.ai_log enable row level security;
+create policy "anon insert ai_log"
+  on public.ai_log for insert to anon
+  with check (
+    kind in ('ask','parse_ok','parse_fail','qa_drop') and
+    length(coalesce(q,''))    <= 500 and
+    length(coalesce(hit,''))  <= 80  and
+    length(coalesce(lang,'')) <= 5
+  );
+create policy "staff read ai_log"
+  on public.ai_log for select to authenticated
+  using (true);
+grant insert on public.ai_log to anon;
+grant select on public.ai_log to authenticated;
+
+-- ═══════════════════════════════════════════════════════════
 --  백오피스 목록용 뷰
 -- ═══════════════════════════════════════════════════════════
 create or replace view public.rfq_board as

@@ -1,6 +1,7 @@
 /** 떠 있는 소재 상담창 · 내부 링크 스크롤 · 히어로 상태 파생 */
 import { S, reduce } from '../state.js';
 import { t, lang, onLangChange } from '../i18n/index.js';
+import { aiLog } from '../lib/ailog.js';
 
 /**
  * 히어로 업로드 영역의 5개 상태를 S 에서 파생합니다.
@@ -68,10 +69,10 @@ function answer(q){
   var s=(q||'').toLowerCase();
   for(var i=0;i<KB.length;i++){
     for(var j=0;j<KB[i].k.length;j++){
-      if(s.indexOf(KB[i].k[j])>=0) return t('ai.a.'+KB[i].id);
+      if(s.indexOf(KB[i].k[j])>=0) return { id:KB[i].id, text:t('ai.a.'+KB[i].id) };
     }
   }
-  return t('ai.fallback');
+  return { id:null, text:t('ai.fallback') };
 }
 
 /* ══════════ 떠 있는 소재 AI 창 ══════════ */
@@ -86,7 +87,10 @@ function fabPush(cls,who,html){
 function fabAsk(q){
   if(!q.trim()) return;
   fabPush('me',t('desk.whoYou'),q);
-  setTimeout(function(){ fabPush('sys',t('ai.who'),answer(q)); },360);
+  var res=answer(q);
+  // 폴백률이 3단계(고객 대면 LLM)의 트리거입니다 — 무엇을 못 받았는지가 지표
+  aiLog('ask', q, res.id);
+  setTimeout(function(){ fabPush('sys',t('ai.who'),res.text); },360);
 }
 function openWin(){
   aiwin.classList.add('open'); fab.classList.add('hide');

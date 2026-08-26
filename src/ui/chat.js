@@ -10,6 +10,7 @@ import { submitRfq } from '../engine/submit.js';
 import { renderSpec, shapeLabel } from './spec-table.js';
 import { buildQuestions, applyAnswer } from './questions.js';
 import { syncHero } from './misc.js';
+import { aiLog, aiLogBeacon } from '../lib/ailog.js';
 import { t } from '../i18n/index.js';
 /* 공급처 마스터의 국가명(한국어) → 권역 키. 사전에 없는 나라는 원문 그대로 둡니다. */
 const CC = { '한국':'kr', '중국':'cn', '일본':'jp', '인도':'in' };
@@ -190,11 +191,16 @@ function submit(text, display){
          판독되는 첫 문장에서 ReferenceError 로 죽어 문답이 시작되지 않았습니다.
          파일 경로와 같게 syncHero 로 드롭 영역 상태를 갱신합니다. */
       S.ITEMS=S.ITEMS.concat(add); S.GAPS=diagnose(S.ITEMS); renderSpec(); syncHero();
+      // 판독 확정률(2단계 트리거)의 분자·분모입니다
+      var okN=add.filter(function(i){return i.state==='확정';}).length;
+      aiLog('parse_ok', v, '확정'+okN+'/'+add.length);
       sys(t('chat.parsedText',{n:add.length}));
       startQA();
     } else {
       S.ANS.memo=(S.ANS.memo?S.ANS.memo+' / ':'')+v;
       S.GAPS=S.GAPS||{noGrade:[],multiGrade:[],noLen:[],ambig:[],noQty:[],dup:[],aero:[]};
+      // 못 읽은 원문이 다음 판독 규칙을 정합니다 (1단계 루틴)
+      if(!S.ITEMS.length) aiLog('parse_fail', v);
       sys(t('chat.freeMemo'));
       startQA();
     }
@@ -218,6 +224,14 @@ askIn.addEventListener('keydown',function(e){
   if(!consentOk()) return;
   submit(this.value);
 });
+/* 문답 중 이탈 — 19문항이 긴지 짧은지는 감이 아니라 이 로그가 말해줍니다.
+   어느 문항에서 나가는지가 문답 다이어트의 근거입니다 (로드맵 0.5단계). */
+window.addEventListener('pagehide', function(){
+  if(S.MODE==='qa' && !S.SENT && S.qQueue && S.qPos < S.qQueue.length){
+    aiLogBeacon('qa_drop', S.qQueue[S.qPos].k, (S.qPos+1)+'/'+S.qQueue.length);
+  }
+});
+
 var agreeReq=document.getElementById('agreeReq');
 if(agreeReq) agreeReq.addEventListener('change',function(){
   if(this.checked) document.getElementById('consent').classList.remove('warn');

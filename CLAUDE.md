@@ -249,6 +249,8 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 - [ ] 공급처 마스터를 `suppliers` 테이블로 이관 후 실제 거래처 입력
 - [ ] 공급처 회신 입력 화면 (지금은 엑셀 수신)
 - [ ] 접수 알림 (Edge Function → 메일 또는 슬랙)
+- [x] AI 계측 로그 `ai_log` — 상담 폴백률·판독 성패·문답 이탈 (로드맵 0.5단계.
+      실행할 SQL: `supabase/2026-08-25_ai_log.sql`)
 - [ ] 로고 선정 (`design_handoff_v4/METAL BRIDGE 로고 시안.dc.html` 10안) → 파비콘·앱 아이콘 교체
 - [ ] 다국어 문안 원어민 검수 (영어·일본어·중국어)
 - [ ] `/brand` 에 로고 파일 묶음 배포 (심벌 확정 후 — 지금은 규정만 공개)

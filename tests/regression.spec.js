@@ -481,3 +481,23 @@ test('지름 목록 품목은 요청서에서 지름별 행으로 전개된다',
   const first = items[0];
   expect(String(first[12])).toContain('총 850');
 });
+
+test('소재 AI 상담 — 카드 즉답과 폴백, 계측 무설정 환경에서도 안 죽는다', async ({ page }) => {
+  const errs = [];
+  page.on('pageerror', (e) => errs.push(e.message));
+  await page.goto('/');
+  await page.click('#fab');
+  await page.fill('#fabInput', '316과 316L 차이가 뭡니까');
+  await page.press('#fabInput', 'Enter');
+  await page.waitForTimeout(600);
+  await expect(page.locator('#fabLog .msg.sys').last()).toContainText('316L은 316의 탄소 함량');
+
+  // 카드 밖 질문은 지어내지 않고 폴백으로
+  await page.fill('#fabInput', '우주선 만들 수 있어요?');
+  await page.press('#fabInput', 'Enter');
+  await page.waitForTimeout(600);
+  await expect(page.locator('#fabLog .msg.sys').last()).toContainText('담당자가 확인해 회신');
+
+  // 환경변수 없는 환경 — 계측(aiLog)이 화면을 깨면 안 됩니다
+  expect(errs).toEqual([]);
+});
