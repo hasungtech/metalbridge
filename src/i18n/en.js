@@ -13,9 +13,12 @@ export default {
     ctaAsk: 'Get a quote',
     ctaFlow: 'See the network',
     factK1: 'Metals', factV1: 'Stainless · Nickel alloys · Titanium · Aluminium · Copper alloys · Tool & alloy steel',
-    factK2: 'Forms', factV2: 'Bar · Plate · Pipe · Forgings · Castings · Cut to size',
-    factK3: 'How we work', factV3: 'Suppliers set the price · Your drawings stay with us unless you approve · Mill certificates (MTC) ship with the metal',
-    s1: 'Specification', s2: 'Fill the gaps', s3: 'Sent at once', s4: 'One comparison sheet',
+    factK2: 'Forms', factV2: 'Bar · Plate · Pipe · Forgings · Castings · Cut-to-size supply',
+    factK3: 'How we work',
+    p1: 'Suppliers set the price',
+    p2: 'Your drawings stay with us unless you approve',
+    p3: 'Mill certificates (MTC) ship with the metal',
+    s1: 'Send your files', s2: 'Spec & gap check', s3: 'RFQs out in parallel', s4: 'One comparison sheet',
   },
 
   desk: {
@@ -48,7 +51,7 @@ export default {
     readyT: 'Read complete', readyS: '{n} file(s)',
     readyBar: 'Read complete', missBar: '{n} need checking',
     idleT: 'Drop your drawing or BOM here', idleS: 'Click to choose · several at once',
-    idleBar: 'Idle',
+    idleBar: 'Ready',
     sendable: '{n} confirmed, ready to send',
     parsing: 'Reading', parsed: 'Read complete', needCheck: 'Needs checking',
   },
@@ -56,7 +59,8 @@ export default {
   rail: {
     label: 'What we read',
     metaEmpty: 'Upload something and it appears here.',
-    empty: 'Nothing uploaded yet.<br>Drop a file on the left and it lands here.',
+    empty: 'Drop a file, or type what you need in one line on the left.<br>Either way it goes through the same reading.',
+    sampleHead: 'Example — this is how an upload is read',
     emptyFilter: 'No line items in this state.',
     meta: '{all} items — {ok} confirmed · {cond} conditional · {miss} need checking',
     ready: '{n} confirmed item(s) can go out to the network as they are.',
@@ -255,7 +259,10 @@ export default {
     n2: 'Replies come back to you as a single comparison sheet. Suppliers set the price, not us.',
     n3: 'Suppliers only receive the specification needed to quote. Original drawings do not leave without your approval.',
     unit: ' companies',
-    batch1: 'First round', batch2: 'Second round',
+    batch1: 'First-round region', batch2: 'Second-round region',
+    poolTag: 'Sourcing pool · our estimate',
+    cand: '{n} contact candidates · no trading history',
+    disc: 'The large figures are our own estimate of each country\u2019s reachable sourcing pool. Our current contact list is 74 candidate suppliers \u2014 all without trading history; they are not accounts.',
   },
 
   zone: {

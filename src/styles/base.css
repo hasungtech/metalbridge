@@ -89,6 +89,15 @@ input,textarea,select{font-family:inherit}
 .intro-facts dt{font-size:11px;color:var(--mute);letter-spacing:.06em;white-space:nowrap}
 .intro-facts dd{margin:0;font-size:13px;color:var(--mute);word-break:keep-all}
 
+/* 원칙 3줄 — 핵심 신뢰 카피. 취급·형상과 위계를 다르게 (QA 지시 07) */
+.intro-principles{border:1px solid var(--hairline);padding:12px 16px 13px;margin-top:var(--md);
+  display:flex;gap:var(--md);align-items:flex-start}
+.intro-principles .ip-k{font-size:11px;color:var(--mute);letter-spacing:.06em;padding-top:3px;flex:none}
+.intro-principles ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.intro-principles li{font-size:13.5px;font-weight:600;color:var(--ink);word-break:keep-all;
+  position:relative;padding-left:19px}
+.intro-principles li::before{content:'\2713';position:absolute;left:0;color:var(--molten);font-weight:700}
+
 /* 대신하는 일 — 표를 접어 한 줄로 */
 .intro-steps{list-style:none;display:flex;flex-wrap:wrap;gap:var(--md) var(--xl);
   margin:0;padding:var(--md) 0 0;border-top:1px solid var(--hairline)}
@@ -242,6 +251,8 @@ section{padding:calc(var(--section) + var(--sm)) 0;border-bottom:1px solid var(-
 .zone:last-child{border-right:0}
 .zone-en{display:block;font-family:'Anton',sans-serif;font-size:13px;letter-spacing:.14em;color:var(--mute)}
 .zone-ko{display:block;font-size:22px;font-weight:700;margin:4px 0 var(--md)}
+.zone-pool{margin:0 0 2px;font-size:10px;letter-spacing:.06em;color:var(--mute)}
+.zone-cand{margin:2px 0 0;font-size:12px;color:var(--charcoal);word-break:keep-all}
 .zone-n{margin:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--mute)}
 .zone-n span{font-size:38px;line-height:1;letter-spacing:-.02em;color:var(--ink);margin-right:3px}
 .zone-good{margin:var(--md) 0 0;font-size:14px;color:var(--mute);word-break:keep-all}
@@ -335,7 +346,17 @@ html[lang="ja"] .about-def, html[lang="zh"] .about-def,
 html[lang="ja"] .about-who, html[lang="zh"] .about-who,
 html[lang="ja"] .principles b, html[lang="zh"] .principles b,
 html[lang="ja"] .principles p, html[lang="zh"] .principles p,
-html[lang="ja"] .card-issues, html[lang="zh"] .card-issues{ word-break:normal }
+html[lang="ja"] .card-issues, html[lang="zh"] .card-issues,
+html[lang="ja"] .intro-principles li, html[lang="zh"] .intro-principles li,
+html[lang="ja"] .zones-disc, html[lang="zh"] .zones-disc,
+html[lang="ja"] .zone-cand, html[lang="zh"] .zone-cand{ word-break:normal }
+
+.zones-disc{max-width:var(--max);margin:14px auto 0;padding:0 var(--section);
+  font-size:12.5px;color:var(--mute);word-break:keep-all}
+
+/* 빈 판독 레일의 예시 카드 — 점선 테두리 + 라벨로 예시임을 명시 */
+.rail-sample-head{font-size:11px;letter-spacing:.05em;color:var(--stone);margin:18px 0 8px}
+.card--sample{border-style:dashed;opacity:.85}
 
 /* ── 반응형 ── */
 @media(max-width:1180px){

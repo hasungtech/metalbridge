@@ -35,7 +35,7 @@ export function syncHero(force){
     st={c:'done',g:'\u2713',t:t('hero.readyT'),s:t('hero.readyS',{n:files}),
         bar:miss?t('hero.missBar',{n:miss}):t('hero.readyBar'),dot:miss?'busy':'live'};
   } else {
-    st={c:'',g:'+',t:t('hero.idleT'),s:t('hero.idleS'),bar:t('hero.idleBar'),dot:''};
+    st={c:'',g:'+',t:t('hero.idleT'),s:t('hero.idleS'),bar:t('hero.idleBar'),dot:'live'};
   }
   drop.classList.remove('hot','reading','done');
   if(st.c) drop.classList.add(st.c);

@@ -80,7 +80,8 @@ test('동의 없이는 접수되지 않는다', async ({ page }) => {
 
   await page.setInputFiles('#fileInput', SAMPLE);
   await page.waitForTimeout(3000);
-  await expect(page.locator('#specBody .card')).toHaveCount(0);
+  // 예시 카드(card--sample)는 실데이터가 아니므로 제외하고 셉니다
+  await expect(page.locator('#specBody .card:not(.card--sample)')).toHaveCount(0);
 });
 
 /* ── 다국어 ── */
@@ -349,9 +350,11 @@ test('밀시트는 답이 없어도 요청서에 EN 10204 3.1 로 들어간다',
   expect(spec.chosen).toBe('3.2 입회검사');
 });
 
-test('취급 · 형상 · 원칙 세 줄이 4개 언어로 나온다', async ({ page }) => {
+test('취급·형상 두 줄과 원칙 블록이 4개 언어로 나온다', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.intro-facts > div')).toHaveCount(3);
+  await expect(page.locator('.intro-facts > div')).toHaveCount(2);
+  // 원칙은 핵심 신뢰 카피라 별도 블록으로 승격되어 있어야 합니다 (QA 지시 07)
+  await expect(page.locator('.intro-principles li')).toHaveCount(3);
 
   for (const code of ['ko', 'en', 'ja', 'zh']) {
     await page.click(`#langSw button[data-l="${code}"]`);
@@ -362,12 +365,28 @@ test('취급 · 형상 · 원칙 세 줄이 4개 언어로 나온다', async ({ 
       expect(k.length, `${code} 라벨 비어 있음`).toBeGreaterThan(0);
       expect(v.split('·').length, `${code} 항목 부족`).toBeGreaterThanOrEqual(3);
     }
-    // 한국어 식별자가 다른 언어 화면에 새지 않아야 합니다
+    const pr = await page.$$eval('.intro-principles li', (els) => els.map((e) => e.textContent.trim()));
+    expect(pr.length).toBe(3);
+    for (const t2 of pr) expect(t2.length, `${code} 원칙 비어 있음`).toBeGreaterThan(0);
     if (code !== 'ko') {
-      const joined = rows.map((r) => r.join(' ')).join(' ');
+      const joined = rows.map((r) => r.join(' ')).join(' ') + ' ' + pr.join(' ');
       expect(joined).not.toContain('스테인리스');
     }
   }
+});
+
+test('권역 숫자에는 추정 표기와 접촉 후보 수가 같은 카드에 붙는다', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForTimeout(600);
+  // 큰 숫자만 크게 두면 과장 광고로 읽힙니다 (QA 지시 01)
+  await expect(page.locator('#zones .zone-pool')).toHaveCount(4);
+  await expect(page.locator('#zones .zone-cand')).toHaveCount(4);
+  await expect(page.locator('.zone-pool').first()).toContainText('자체 추정');
+  await expect(page.locator('.zone-cand').first()).toContainText('거래 이력 없음');
+  await expect(page.locator('.zones-disc')).toContainText('후보 74곳');
+  // 예시 레일 — 빈 화면 대신 라벨 붙은 샘플 카드
+  await expect(page.locator('#specBody .card--sample')).toHaveCount(1);
+  await expect(page.locator('.rail-sample-head')).toContainText('예시');
 });
 
 test('브랜드 페이지 — 로고 규정과 색이 뜬다', async ({ page }) => {
