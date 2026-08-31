@@ -194,7 +194,11 @@ export function initScene(){
       '<div class="zone" data-k="'+z.key+'">'+
         '<span class="zone-en">'+z.en+'</span>'+
         '<b class="zone-ko">'+t('zone.'+z.key+'.ko')+'</b>'+
+        /* 추정치 표기를 숫자와 같은 카드에, 접촉 후보(검증 가능한 수)를 바로 아래에.
+           숫자만 크게 두면 과장 광고로 읽힙니다 (QA 지시 01) */
+        '<p class="zone-pool mono">'+t('flow.poolTag')+'</p>'+
         '<p class="zone-n"><span class="mono">'+MARKET_POOL[z.ko]+'</span>'+t('flow.unit')+'</p>'+
+        '<p class="zone-cand">'+t('flow.cand',{n:supplierCount(z.ko)})+'</p>'+
         '<p class="zone-good">'+t('zone.'+z.key+'.good')+'</p>'+
         '<p class="zone-meta mono">'+t('zone.'+z.key+'.meta')+'</p>'+
         '<p class="zone-batch mono"><i class="'+(z.batch==='1차'?'on':'')+'"></i>'+

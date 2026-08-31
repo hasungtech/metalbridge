@@ -94,7 +94,13 @@ export function renderSpec(){
   if(!S.filter) S.filter = 'all';
 
   if(!S.ITEMS.length){
-    body.innerHTML = '<div class="empty"><p>'+t('rail.empty')+'</p></div>';
+    /* 빈 패널이 깨진 화면처럼 보이지 않게, 예시임을 명시한 샘플 카드를 보여줍니다.
+       실데이터로 오인되지 않도록 라벨과 점선 테두리를 붙입니다 (QA 지시 06) */
+    var sample = { no:'—', grades:['STS316L'], shape:'판재', dim:'t10 × 1000 × 2000',
+                   qty:20, raw:'STS316L 판재 1000x2000xt10 20장', state:'확정', issues:[], dims:[] };
+    body.innerHTML = '<div class="empty"><p>'+t('rail.empty')+'</p></div>'+
+      '<p class="rail-sample-head mono">'+t('rail.sampleHead')+'</p>'+
+      card(sample).replace('class="card"','class="card card--sample"');
     if(meta) meta.textContent = t('rail.metaEmpty');
     paintFilter(c);
     if(foot) foot.hidden = true;
