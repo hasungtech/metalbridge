@@ -205,9 +205,9 @@ export default {
   },
 
   chat: {
-    sendFailConfig: '<b>We could not receive that.</b><span class="mini">Our intake is not connected yet. Download the RFQ and email it to quote@metalbridge.ai and our team will pick it up straight away.</span>',
+    sendFailConfig: '<b>We could not receive that.</b><span class="mini">Our intake is not connected yet. Download the RFQ and email it to info@metalbridge.ai and our team will pick it up straight away.</span>',
     contactBad: 'That does not look like a contact. Please give an email address or a phone number — it is the only way we can send replies back.',
-    sendFailDb: '<b>We could not receive that.</b><span class="mini">Please press the button again in a moment. If it keeps failing, download the RFQ and email it to quote@metalbridge.ai.</span>',
+    sendFailDb: '<b>We could not receive that.</b><span class="mini">Please press the button again in a moment. If it keeps failing, download the RFQ and email it to info@metalbridge.ai.</span>',
     stateFail: 'Not received · please try again',
     needIntro: '<b>Let us ask what you need.</b><span class="mini">Four things — material, form, size and quantity — and we can build the RFQ.</span>',
     reading: 'Reading your files…',

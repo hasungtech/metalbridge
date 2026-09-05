@@ -204,9 +204,9 @@ export default {
   },
 
   chat: {
-    sendFailConfig: '<b>受け付けられませんでした。</b><span class="mini">受付窓口がまだ接続されていません。依頼書をダウンロードのうえ quote@metalbridge.ai へお送りいただければ、担当者がすぐ確認します。</span>',
+    sendFailConfig: '<b>受け付けられませんでした。</b><span class="mini">受付窓口がまだ接続されていません。依頼書をダウンロードのうえ info@metalbridge.ai へお送りいただければ、担当者がすぐ確認します。</span>',
     contactBad: '連絡先の形式が正しくないようです。メールアドレスか電話番号でお知らせください。回答をお返しする唯一の窓口です。',
-    sendFailDb: '<b>受け付けられませんでした。</b><span class="mini">少し経ってからもう一度押してください。それでも失敗する場合は、依頼書をダウンロードして quote@metalbridge.ai へお送りください。</span>',
+    sendFailDb: '<b>受け付けられませんでした。</b><span class="mini">少し経ってからもう一度押してください。それでも失敗する場合は、依頼書をダウンロードして info@metalbridge.ai へお送りください。</span>',
     stateFail: '受け付けられていません · もう一度お試しください',
     needIntro: '<b>何が必要かお伺いします。</b><span class="mini">材料・形状・寸法・数量の4つをお教えいただければ、依頼書を作成できます。</span>',
     reading: '資料を読み取っています…',
