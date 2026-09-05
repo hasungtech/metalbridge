@@ -2,6 +2,15 @@
 
 형식: `날짜 · 무엇을 · 왜 · 영향 범위`
 
+## 2026-09-05 · 회사 회신 주소 info@ 확정
+운영자 결정 — 고객이 회신하는 주소는 quote@ 가 아니라 **info@metalbridge.ai** 입니다.
+
+- 교체 범위: `state.js` MB_MAIL(요청서 ① 회신처에 인쇄), i18n 4개 사전의
+  접수 실패 안내, `notify-rfq` NOTIFY_FROM 기본값, 메인 `#about` 연락처,
+  `/privacy` `/terms` 문의처, `docs/메일_알림_세팅.md`, CLAUDE.md 백로그
+- ImprovMX 는 `info` 별칭과 catch-all(`*`)이 이미 걸려 있어 수신 측 조치 없음.
+  quote@ 로 오는 기존 메일도 catch-all 로 계속 도착합니다
+
 ## 2026-09-05 · 회사 메일 연결 · 접수 알림 함수
 운영자가 team.metalbridge@gmail.com 개설. 도메인 메일과 알림을 연결했습니다.
 

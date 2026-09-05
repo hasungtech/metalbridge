@@ -204,9 +204,9 @@ export default {
   },
 
   chat: {
-    sendFailConfig: '<b>未能受理。</b><span class="mini">受理通道尚未接通。请下载询价书并发送至 quote@metalbridge.ai，专员会立即确认。</span>',
+    sendFailConfig: '<b>未能受理。</b><span class="mini">受理通道尚未接通。请下载询价书并发送至 info@metalbridge.ai，专员会立即确认。</span>',
     contactBad: '联系方式格式不正确。请提供电子邮箱或电话号码——这是我们回传报价的唯一渠道。',
-    sendFailDb: '<b>未能受理。</b><span class="mini">请稍后再点一次。若仍不成功，请下载询价书并发送至 quote@metalbridge.ai。</span>',
+    sendFailDb: '<b>未能受理。</b><span class="mini">请稍后再点一次。若仍不成功，请下载询价书并发送至 info@metalbridge.ai。</span>',
     stateFail: '未受理 · 请重试',
     needIntro: '<b>请让我们了解您的需求。</b><span class="mini">材料、形状、尺寸、数量四项齐了就能生成询价书。</span>',
     reading: '正在读取资料…',

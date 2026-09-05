@@ -204,9 +204,9 @@ export default {
   },
 
   chat: {
-    sendFailConfig: '<b>접수하지 못했습니다.</b><span class="mini">접수 창구가 아직 연결되지 않았습니다. 요청서를 내려받아 quote@metalbridge.ai 로 보내주시면 담당자가 바로 확인하겠습니다.</span>',
+    sendFailConfig: '<b>접수하지 못했습니다.</b><span class="mini">접수 창구가 아직 연결되지 않았습니다. 요청서를 내려받아 info@metalbridge.ai 로 보내주시면 담당자가 바로 확인하겠습니다.</span>',
     contactBad: '연락처 형식이 맞지 않습니다. 이메일 주소나 전화번호로 다시 알려주십시오. 회신을 전달할 유일한 통로입니다.',
-    sendFailDb: '<b>접수하지 못했습니다.</b><span class="mini">잠시 후 다시 눌러주십시오. 계속 안 되면 요청서를 내려받아 quote@metalbridge.ai 로 보내주십시오.</span>',
+    sendFailDb: '<b>접수하지 못했습니다.</b><span class="mini">잠시 후 다시 눌러주십시오. 계속 안 되면 요청서를 내려받아 info@metalbridge.ai 로 보내주십시오.</span>',
     stateFail: '접수되지 않았습니다 · 다시 시도해 주십시오',
     needIntro: '<b>어떤 소재가 필요하신지 여쭙겠습니다.</b><span class="mini">소재 · 형상 · 치수 · 수량 네 가지만 알려주시면 요청서를 만들 수 있습니다.</span>',
     reading: '자료를 읽고 있습니다…',

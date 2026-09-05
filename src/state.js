@@ -15,5 +15,5 @@ export const S = {
   filter: 'all',  // 판독 레일 상태 필터 (all | 확정 | 조건부 | 불가)
   lang: 'ko',     // 화면 언어 (ko | en | ja | zh) — i18n/index.js 가 정합니다
 };
-export const MB_MAIL = 'quote@metalbridge.ai';
+export const MB_MAIL = 'info@metalbridge.ai';
 export const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

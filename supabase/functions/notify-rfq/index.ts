@@ -1,12 +1,12 @@
 /** 접수 알림 — rfq INSERT 웹훅 → 회사 메일
  *
  *  Supabase Dashboard → Database → Webhooks 에서 rfq INSERT 에 이 함수를 겁니다.
- *  메일 발송은 Resend API 를 씁니다 (도메인 metalbridge.ai 인증 후 quote@ 발신).
+ *  메일 발송은 Resend API 를 씁니다 (도메인 metalbridge.ai 인증 후 info@ 발신).
  *
  *  필요한 시크릿 (supabase secrets set 으로 등록):
  *    RESEND_API_KEY   Resend 대시보드에서 발급
  *    NOTIFY_TO        받을 주소 (기본 team.metalbridge@gmail.com)
- *    NOTIFY_FROM      보내는 주소 (기본 quote@metalbridge.ai — Resend 도메인 인증 필수)
+ *    NOTIFY_FROM      보내는 주소 (기본 info@metalbridge.ai — Resend 도메인 인증 필수)
  *    HOOK_SECRET      웹훅 위조 방지 — Webhook 설정의 HTTP 헤더 x-hook-secret 과 같은 값
  *
  *  배포: supabase functions deploy notify-rfq --no-verify-jwt
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: `METAL BRIDGE <${Deno.env.get('NOTIFY_FROM') ?? 'quote@metalbridge.ai'}>`,
+      from: `METAL BRIDGE <${Deno.env.get('NOTIFY_FROM') ?? 'info@metalbridge.ai'}>`,
       to: [Deno.env.get('NOTIFY_TO') ?? 'team.metalbridge@gmail.com'],
       subject: `[접수] ${v('rfq_no')} · 품목 ${v('item_count')}건 · ${v('contact')}`,
       html,
