@@ -189,6 +189,7 @@ PW_CHROMIUM_PATH=/path/to/chrome npm test
 | `design/AI_ROADMAP.md` | AI 확장 로드맵 (트리거 기반 · 게이트 3개) |
 | `docs/CLAUDE_CODE_시작하기.md` | 붙여넣기용 지시문 모음 |
 | `docs/세팅가이드.md` | 환경 구축 절차 |
+| `docs/메일_알림_세팅.md` | 회사 메일(수신·발신)과 접수 알림 연결 절차 |
 | `docs/운영매뉴얼.md` | 서비스 운영 규칙·지표·판단 기준 |
 | `supabase/schema.sql` | DB 스키마 (단일 출처) |
 
@@ -248,7 +249,8 @@ Vite 다중 진입점입니다 (`vite.config.js` 의 `rollupOptions.input`).
 - [ ] 공급처 마스터를 `suppliers` 테이블로 이관 후 백오피스에서 관리
 - [ ] 공급처 마스터를 `suppliers` 테이블로 이관 후 실제 거래처 입력
 - [ ] 공급처 회신 입력 화면 (지금은 엑셀 수신)
-- [ ] 접수 알림 (Edge Function → 메일 또는 슬랙)
+- [ ] 접수 알림 — 코드 완료(`supabase/functions/notify-rfq/`), 배포·웹훅 연결 절차는
+      `docs/메일_알림_세팅.md`. 회사 메일: quote@metalbridge.ai → team.metalbridge@gmail.com 포워딩
 - [x] AI 계측 로그 `ai_log` — 상담 폴백률·판독 성패·문답 이탈 (로드맵 0.5단계.
       실행할 SQL: `supabase/2026-08-25_ai_log.sql`)
 - [ ] 로고 선정 (`design_handoff_v4/METAL BRIDGE 로고 시안.dc.html` 10안) → 파비콘·앱 아이콘 교체
